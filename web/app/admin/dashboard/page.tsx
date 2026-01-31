@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Mail, RefreshCw, LogOut, CheckCircle, AlertCircle, Loader2, BarChart3, History, Trash2, SendHorizontal } from 'lucide-react';
+import { Users, Mail, RefreshCw, LogOut, CheckCircle, AlertCircle, Loader2, BarChart3, History, Trash2, SendHorizontal, Layout, MousePointer2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 interface Subscriber {
@@ -19,8 +19,13 @@ interface MailLog {
     recipient_count: number;
     status: string;
     simulated?: boolean;
-    open_count?: number;      // Add tracking metrics
-    click_count?: number;     // Add tracking metrics
+    open_count?: number;
+    click_count?: number;
+}
+
+interface WebStat {
+    pv: number;
+    clicks: number;
 }
 
 interface Quota {
@@ -32,6 +37,7 @@ interface Quota {
 export default function AdminDashboard() {
     const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
     const [history, setHistory] = useState<MailLog[]>([]);
+    const [webStats, setWebStats] = useState<Record<string, WebStat>>({});
     const [chartData, setChartData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
@@ -76,6 +82,7 @@ export default function AdminDashboard() {
             const data = await res.json();
             if (data.history) setHistory(data.history);
             if (data.chartData) setChartData(data.chartData);
+            if (data.webStats) setWebStats(data.webStats);
             if (data.quota) setQuota(data.quota);
         } catch (error) {
             console.error('Failed to fetch stats');
@@ -95,7 +102,7 @@ export default function AdminDashboard() {
             const data = await res.json();
             if (data.success) {
                 alert(`성공적으로 발송되었습니다! (${data.count}명${data.simulated ? ' - 시뮬레이션 모드' : ''})`);
-                fetchStatusData(); // Refresh history
+                fetchStatusData();
             } else {
                 alert('발송 실패: ' + data.message);
             }
@@ -409,6 +416,123 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
+                        {/* Combined Metrics Integrated Table */}
+                        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
+                            <div className="px-8 py-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                                <h2 className="text-xl font-black text-white flex items-center gap-3">
+                                    <Loader2 className="w-5 h-5 text-blue-400" />
+                                    통합 일별 성과 분석
+                                </h2>
+                                <div className="flex gap-4">
+                                    <span className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                                        <Mail className="w-3 h-3 text-blue-400" /> 뉴스레터
+                                    </span>
+                                    <span className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                                        <Layout className="w-3 h-3 text-purple-400" /> 웹 사이트
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/5">
+                                            <th className="px-8 py-5 border-r border-white/5">날짜</th>
+                                            <th className="px-8 py-5 bg-blue-500/5" colSpan={3}>📧 뉴스레터 발송 및 추적</th>
+                                            <th className="px-8 py-5 bg-purple-500/5" colSpan={2}>🌐 웹 사이트(홈) 통계</th>
+                                        </tr>
+                                        <tr className="bg-slate-950/30 text-slate-500 text-[9px] font-black uppercase tracking-widest border-b border-white/5">
+                                            <th className="px-8 py-3 border-r border-white/5"></th>
+                                            <th className="px-6 py-3 bg-blue-500/5">발송량</th>
+                                            <th className="px-6 py-3 bg-blue-500/5">오픈(율)</th>
+                                            <th className="px-6 py-3 bg-blue-500/5">클릭(율)</th>
+                                            <th className="px-6 py-3 bg-purple-500/5">페이지 뷰(PV)</th>
+                                            <th className="px-6 py-3 bg-purple-500/5">클릭 횟수</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5 text-sm">
+                                        {(() => {
+                                            // Process all dates from both history and webStats
+                                            const allDates = new Set([
+                                                ...history.filter(log => log.status === 'success' && !log.simulated).map(log =>
+                                                    log.sent_at ? log.sent_at.split('T')[0] : ''
+                                                ).filter(Boolean),
+                                                ...Object.keys(webStats)
+                                            ]);
+
+                                            const sortedDates = Array.from(allDates).sort((a, b) =>
+                                                new Date(b).getTime() - new Date(a).getTime()
+                                            );
+
+                                            return sortedDates.length === 0 ? (
+                                                <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-500 font-bold italic">통계 데이터가 없습니다.</td></tr>
+                                            ) : (
+                                                sortedDates.map((date) => {
+                                                    // Aggregate mail stats for this date
+                                                    const dayLogs = history.filter(log =>
+                                                        log.sent_at?.startsWith(date) &&
+                                                        log.status === 'success' &&
+                                                        !log.simulated
+                                                    );
+
+                                                    const totalRecipients = dayLogs.reduce((sum, log) => sum + (log.recipient_count || 0), 0);
+                                                    const totalOpens = dayLogs.reduce((sum, log) => sum + (log.open_count || 0), 0);
+                                                    const totalClicks = dayLogs.reduce((sum, log) => sum + (log.click_count || 0), 0);
+
+                                                    const openRate = totalRecipients > 0 ? ((totalOpens / totalRecipients) * 100).toFixed(1) : '0.0';
+                                                    const clickRate = totalRecipients > 0 ? ((totalClicks / totalRecipients) * 100).toFixed(1) : '0.0';
+
+                                                    // Web stats
+                                                    const ws = webStats[date] || { pv: 0, clicks: 0 };
+
+                                                    return (
+                                                        <tr key={date} className="hover:bg-white/[0.02] transition-colors group">
+                                                            <td className="px-8 py-5 font-bold text-slate-300 border-r border-white/5">{date}</td>
+
+                                                            {/* NewsLetter Columns */}
+                                                            <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-black text-white">{totalRecipients.toLocaleString()}</span>
+                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">건</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
+                                                                <div className="space-y-1">
+                                                                    <div className="font-bold text-blue-400">{totalOpens.toLocaleString()}회</div>
+                                                                    <div className="text-[10px] font-black text-blue-500/50">{openRate}%</div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
+                                                                <div className="space-y-1">
+                                                                    <div className="font-bold text-green-400">{totalClicks.toLocaleString()}회</div>
+                                                                    <div className="text-[10px] font-black text-green-500/50">{clickRate}%</div>
+                                                                </div>
+                                                            </td>
+
+                                                            {/* Web Stats Columns */}
+                                                            <td className="px-6 py-5 bg-purple-500/[0.02] group-hover:bg-purple-500/[0.05]">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Layout className="w-3 h-3 text-purple-400" />
+                                                                    <span className="font-bold text-pink-400">{ws.pv.toLocaleString()}</span>
+                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">PV</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5 bg-purple-500/[0.02] group-hover:bg-purple-500/[0.05]">
+                                                                <div className="flex items-center gap-2">
+                                                                    <MousePointer2 className="w-3 h-3 text-purple-400" />
+                                                                    <span className="font-bold text-amber-400">{ws.clicks.toLocaleString()}</span>
+                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">클릭</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            );
+                                        })()}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         {/* System Status Table */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl">
@@ -449,116 +573,6 @@ export default function AdminDashboard() {
                                         ></div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden">
-                            <div className="px-8 py-6 border-b border-white/5 bg-white/5 font-black text-lg">
-                                일별 발송 통계 테이블
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                                            <th className="px-8 py-5">날짜</th>
-                                            <th className="px-8 py-5">총 발송 건수</th>
-                                            <th className="px-8 py-5 text-right">상태</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5 text-sm">
-                                        {chartData.length === 0 ? (
-                                            <tr><td colSpan={3} className="px-8 py-10 text-center text-slate-500">통계 데이터가 없습니다.</td></tr>
-                                        ) : (
-                                            [...chartData].reverse().map((data) => (
-                                                <tr key={data.date} className="hover:bg-white/[0.02] transition-colors">
-                                                    <td className="px-8 py-5 font-bold text-slate-300">{data.date}</td>
-                                                    <td className="px-8 py-5 font-black text-blue-400">{data.count.toLocaleString()}건</td>
-                                                    <td className="px-8 py-5 text-right">
-                                                        <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full uppercase">Normal</span>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* Daily Tracking Metrics Table */}
-                        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden">
-                            <div className="px-8 py-6 border-b border-white/5 bg-white/5 font-black text-lg">
-                                일별 오픈 및 클릭 통계
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                                            <th className="px-8 py-5">날짜</th>
-                                            <th className="px-8 py-5">발송 건수</th>
-                                            <th className="px-8 py-5">오픈 횟수</th>
-                                            <th className="px-8 py-5">클릭 횟수</th>
-                                            <th className="px-8 py-5">오픈율</th>
-                                            <th className="px-8 py-5 text-right">클릭율</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5 text-sm">
-                                        {(() => {
-                                            // Group history by date
-                                            const dailyStats = history
-                                                .filter(log => log.status === 'success' && !log.simulated)
-                                                .reduce((acc, log) => {
-                                                    const date = log.sent_at ? new Date(log.sent_at).toLocaleDateString('ko-KR', {
-                                                        year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit'
-                                                    }).replace(/\. /g, '-').replace('.', '') : 'Unknown';
-
-                                                    if (!acc[date]) {
-                                                        acc[date] = {
-                                                            date,
-                                                            totalRecipients: 0,
-                                                            totalOpens: 0,
-                                                            totalClicks: 0
-                                                        };
-                                                    }
-
-                                                    acc[date].totalRecipients += log.recipient_count || 0;
-                                                    acc[date].totalOpens += log.open_count || 0;
-                                                    acc[date].totalClicks += log.click_count || 0;
-
-                                                    return acc;
-                                                }, {} as Record<string, { date: string; totalRecipients: number; totalOpens: number; totalClicks: number; }>);
-
-                                            const sortedStats = Object.values(dailyStats).sort((a, b) =>
-                                                new Date(b.date).getTime() - new Date(a.date).getTime()
-                                            );
-
-                                            return sortedStats.length === 0 ? (
-                                                <tr><td colSpan={6} className="px-8 py-10 text-center text-slate-500">통계 데이터가 없습니다.</td></tr>
-                                            ) : (
-                                                sortedStats.map((stat) => {
-                                                    const openRate = stat.totalRecipients > 0
-                                                        ? ((stat.totalOpens / stat.totalRecipients) * 100).toFixed(1)
-                                                        : '0.0';
-                                                    const clickRate = stat.totalRecipients > 0
-                                                        ? ((stat.totalClicks / stat.totalRecipients) * 100).toFixed(1)
-                                                        : '0.0';
-
-                                                    return (
-                                                        <tr key={stat.date} className="hover:bg-white/[0.02] transition-colors">
-                                                            <td className="px-8 py-5 font-bold text-slate-300">{stat.date}</td>
-                                                            <td className="px-8 py-5 font-black text-white">{stat.totalRecipients.toLocaleString()}건</td>
-                                                            <td className="px-8 py-5 font-bold text-blue-400">{stat.totalOpens.toLocaleString()}</td>
-                                                            <td className="px-8 py-5 font-bold text-purple-400">{stat.totalClicks.toLocaleString()}</td>
-                                                            <td className="px-8 py-5 font-bold text-green-400">{openRate}%</td>
-                                                            <td className="px-8 py-5 text-right font-bold text-amber-400">{clickRate}%</td>
-                                                        </tr>
-                                                    );
-                                                })
-                                            );
-                                        })()}
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>

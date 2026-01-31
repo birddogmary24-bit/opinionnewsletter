@@ -105,9 +105,22 @@ def run_newsletter_job():
     
     print(f"📧 Found {len(recipients)} recipients.")
     
-    # 3. Send Emails
+    # 3. Create mail_history entry first to get mail_id
+    mail_history_ref = db.collection('mail_history').add({
+        'sent_at': datetime.datetime.now().isoformat(),
+        'type': 'all',
+        'recipient_count': len(recipients),
+        'status': 'success',
+        'simulated': False,
+        'open_count': 0,      # Initialize tracking counters
+        'click_count': 0      # Initialize tracking counters
+    })
+    
+    mail_id = mail_history_ref[1].id # Firestore .add returns (time, doc_ref)
+    
+    # 4. Send Emails
     email_service = EmailService()
-    email_service.send_newsletter(recipients, newsletter_data)
+    email_service.send_newsletter(recipients, newsletter_data, mail_id=mail_id)
     
     print("✅ Newsletter Job Complete.")
 

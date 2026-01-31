@@ -113,7 +113,7 @@ export async function POST(request: Request) {
         const templateSource = fs.readFileSync(templatePath, 'utf-8');
         const template = Handlebars.compile(templateSource);
 
-        const trackingUrl = 'https://opinion-newsletter-web-810426728503.us-central1.run.app';
+        const trackingUrl = 'https://opinionnewsletter-web-810426728503.asia-northeast3.run.app';
 
         const htmlContent = template({
             contents: {

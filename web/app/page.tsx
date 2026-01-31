@@ -26,6 +26,18 @@ export default function Home() {
     const categories = ['All', '슈카월드', '매경 월가월부'];
 
     useEffect(() => {
+        // Track Page View
+        fetch('/api/track/view', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                path: '/',
+                referrer: document.referrer
+            }),
+        }).catch(() => { });
+    }, []);
+
+    useEffect(() => {
         async function fetchContents() {
             try {
                 const res = await fetch('/api/contents');
@@ -79,8 +91,13 @@ export default function Home() {
         ? remainingContents
         : remainingContents.filter(c => c.opinion_leader.includes(activeTab));
 
+    const trackClick = (url: string, target: string) => {
+        fetch(`/api/track/click?url=${encodeURIComponent(url)}&target=${target}`).catch(() => { });
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white font-sans selection:bg-blue-500/30">
+            {/* ... rest of the component replaced below for brevity in multi_replace ... */}
             {/* Ambient background effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"></div>
@@ -242,6 +259,7 @@ export default function Home() {
                                                 href={item.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                onClick={() => trackClick(item.url, 'web_top')}
                                                 className="group/btn inline-flex items-center text-xs font-black text-blue-400 hover:text-white uppercase tracking-widest transition-all"
                                             >
                                                 원문 리포트 읽기
@@ -309,6 +327,7 @@ export default function Home() {
                                                         href={item.url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
+                                                        onClick={() => trackClick(item.url, 'web_category')}
                                                         className="group/link inline-flex items-center text-xs font-black text-blue-400 hover:text-white uppercase tracking-widest transition-all"
                                                     >
                                                         상세 리포트 보기

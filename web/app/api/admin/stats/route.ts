@@ -11,6 +11,10 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const now = new Date();
+        const kstOffset = 9 * 60 * 60 * 1000;
+        const todayKST = new Date(now.getTime() + kstOffset).toISOString().split('T')[0];
+
         // 1. Fetch send logs
         const logsSnapshot = await db.collection('mail_history').orderBy('sent_at', 'desc').limit(100).get();
         const history = logsSnapshot.docs.map(doc => {
@@ -22,15 +26,13 @@ export async function GET() {
                 recipient_count: data.recipient_count,
                 status: data.status,
                 simulated: data.simulated,
-                open_count: data.open_count || 0,      // Add tracking metrics
-                click_count: data.click_count || 0,    // Add tracking metrics
+                open_count: data.open_count || 0,
+                click_count: data.click_count || 0,
             };
         });
 
         // 2. Aggregate for chart (Daily volume)
         const dailyVolumes: { [date: string]: number } = {};
-
-        // Let's get last 7 days for the chart
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -43,7 +45,6 @@ export async function GET() {
             }
         });
 
-        // Format as array for Recharts
         const chartData = Object.keys(dailyVolumes)
             .sort()
             .map(date => ({
@@ -51,11 +52,7 @@ export async function GET() {
                 count: dailyVolumes[date]
             }));
 
-        // 3. System Quota (Today's count)
-        const now = new Date();
-        const kstOffset = 9 * 60 * 60 * 1000;
-        const todayKST = new Date(now.getTime() + kstOffset).toISOString().split('T')[0];
-
+        // 3. Today's Send Count
         let todayCount = 0;
         history.forEach(log => {
             if (log.sent_at) {
@@ -66,9 +63,38 @@ export async function GET() {
             }
         });
 
+        // 4. Aggregate Web Tracking Tracking Events (PV and Web Clicks)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const trackingSnapshot = await db.collection('tracking_events')
+            .where('timestamp', '>=', thirtyDaysAgo)
+            .get();
+
+        const webStats: { [date: string]: { pv: number; clicks: number } } = {};
+
+        trackingSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (!data.timestamp) return;
+
+            const date = data.timestamp.toDate();
+            const dateKST = new Date(date.getTime() + kstOffset).toISOString().split('T')[0];
+
+            if (!webStats[dateKST]) {
+                webStats[dateKST] = { pv: 0, clicks: 0 };
+            }
+
+            if (data.type === 'pv') {
+                webStats[dateKST].pv++;
+            } else if (data.type === 'click' && (data.target?.startsWith('web_') || !data.mailId)) {
+                webStats[dateKST].clicks++;
+            }
+        });
+
         return NextResponse.json({
             history,
             chartData,
+            webStats,
             quota: {
                 todayCount,
                 limit: 500,

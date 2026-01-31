@@ -21,6 +21,10 @@ class EmailService:
         # Setup Jinja2
         template_dir = os.path.join(BASE_DIR, 'templates')
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
+        
+        # Add urlencode filter
+        import urllib.parse
+        self.jinja_env.filters['urlencode'] = urllib.parse.quote_plus
 
     def render_template(self, contents, mail_id=None):
         """
@@ -29,8 +33,8 @@ class EmailService:
         template = self.jinja_env.get_template('email_daily.html')
         date_str = datetime.datetime.now().strftime('%Y.%m.%d')
         
-        # Base URL for tracking (Update with your actual production domain)
-        base_tracking_url = "https://opinion-newsletter-web-810426728503.us-central1.run.app"
+        # Base URL for tracking (Seoul region)
+        base_tracking_url = "https://opinionnewsletter-web-810426728503.asia-northeast3.run.app"
         
         return template.render(
             contents=contents, 
@@ -51,7 +55,7 @@ class EmailService:
             print(f"   [Mock Send] Would have sent to {len(to_emails)} recipients.")
             return
 
-        html_content = self.render_template(contents)
+        html_content = self.render_template(contents, mail_id=mail_id)
         # Use KST timezone (UTC+9)
         import pytz
         kst = pytz.timezone('Asia/Seoul')

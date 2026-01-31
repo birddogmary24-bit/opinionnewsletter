@@ -68,7 +68,8 @@
                     {% for item in contents.top_stories %}
                     <tr>
                         <td style="padding: 0 20px 40px;">
-                            <a href="{{ item.url }}" style="text-decoration: none; display: block;">
+                            <a href="{{ tracking_url }}/api/track/click?id={{ mail_id }}&url={{ item.url | urlencode }}&target=top"
+                                style="text-decoration: none; display: block;">
                                 <img src="{{ item.thumbnail }}" alt="{{ item.title }}" width="560"
                                     style="width: 100%; height: auto; border-radius: 16px; border: 1px solid #1e293b; display: block;" />
                                 <div style="padding-top: 15px;">
@@ -118,7 +119,8 @@
                                 <!-- Grid Item: PC 2-col (280px), Mobile 1-col (via CSS) -->
                                 <div class="grid-item"
                                     style="display: inline-block; width: 280px; margin: 0 5px 20px 5px; vertical-align: top;">
-                                    <a href="{{ item.url }}" style="text-decoration: none; display: block;">
+                                    <a href="{{ tracking_url }}/api/track/click?id={{ mail_id }}&url={{ item.url | urlencode }}&target=category"
+                                        style="text-decoration: none; display: block;">
                                         <img src="{{ item.thumbnail }}" alt="{{ item.title }}" width="280"
                                             style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #1e293b; display: block;" />
                                         <div style="padding-top: 10px;">
@@ -151,9 +153,12 @@
                                 &copy; 2026 ONEW. All rights reserved.<br />
                                 <a href="#"
                                     style="color: #64748b; text-decoration: underline;">수신거부</a>&nbsp;&nbsp;•&nbsp;&nbsp;<a
-                                    href="https://opinion-newsletter-web-810426728503.us-central1.run.app"
+                                    href="{{ tracking_url }}/api/track/click?id={{ mail_id }}&url={{ 'https://opinionnewsletter-web-810426728503.asia-northeast3.run.app' | urlencode }}&target=website"
                                     style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
                             </p>
+                            <!-- Tracking Pixel -->
+                            <img src="{{ tracking_url }}/api/track/open?id={{ mail_id }}" width="1" height="1"
+                                style="display:none !important;" />
                         </td>
                     </tr>
                 </table>
