@@ -43,16 +43,33 @@ def run_newsletter_job():
     print("🚀 Starting Newsletter Delivery Job...")
     db = get_db()
     
-    # 1. Fetch Latest Content (Top 5-6)
+    # 1. Fetch Latest Content (Top 5-6 + Others)
     print("Fetching today's content...")
-    docs = db.collection('contents').order_by('scraped_at', direction='DESCENDING').limit(6).stream()
-    contents = []
+    docs = db.collection('contents').order_by('scraped_at', direction='DESCENDING').limit(50).stream()
+    all_contents = []
     for doc in docs:
-        contents.append(doc.to_dict())
+        all_contents.append(doc.to_dict())
     
-    if not contents:
+    if not all_contents:
         print("⚠️ No content found. Aborting.")
         return
+
+    # Logic: Top 6 mixed, rest grouped by opinion_leader
+    top_limit = 6
+    top_stories = all_contents[:top_limit]
+    remaining_stories = all_contents[top_limit:]
+    
+    category_stories = {}
+    for story in remaining_stories:
+        leader = story.get('opinion_leader', 'Other')
+        if leader not in category_stories:
+            category_stories[leader] = []
+        category_stories[leader].append(story)
+    
+    newsletter_data = {
+        'top_stories': top_stories,
+        'category_stories': category_stories
+    }
 
     # 2. Fetch Active Subscribers
     print("Fetching subscribers...")
@@ -80,7 +97,7 @@ def run_newsletter_job():
     
     # 3. Send Emails
     email_service = EmailService()
-    email_service.send_newsletter(recipients, contents)
+    email_service.send_newsletter(recipients, newsletter_data)
     
     print("✅ Newsletter Job Complete.")
 

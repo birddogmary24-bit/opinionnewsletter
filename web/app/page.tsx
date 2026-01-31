@@ -98,34 +98,33 @@ export default function Home() {
             </header>
 
             {/* 2. Compact Hero & Subscription */}
-            <section className="bg-white border-b border-slate-200 py-12 md:py-16">
+            <section className="bg-white border-b border-slate-200 py-8 md:py-12">
                 <div className="container mx-auto px-4 text-center max-w-2xl">
-                    <h1 className="font-serif text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                        세상의 소음을 걸러낸<br />오피니언 뉴스레터
+                    <h1 className="font-serif text-2xl md:text-3xl font-bold text-slate-900 mb-2 whitespace-nowrap">
+                        세상의 소음을 걸러낸 오피니언 뉴스레터
                     </h1>
-                    <p className="text-slate-600 mb-8 leading-relaxed">
-                        경제, 기술, 정치 분야의 최고 전문가들이 전하는<br className="hidden md:block" />
-                        깊이 있는 통찰을 매일 아침 메일함으로 보내드립니다.
+                    <p className="text-slate-600 mb-6 text-sm md:text-base whitespace-nowrap">
+                        경제, 기술, 정치 분야의 최고 전문가들이 전하는 깊이 있는 통찰을 매일 아침 받아보세요.
                     </p>
 
-                    <div id="subscribe-form" className="bg-slate-50 p-6 rounded-lg border border-slate-200 shadow-sm">
+                    <div id="subscribe-form" className="max-w-md mx-auto">
                         {status === 'success' ? (
-                            <div className="text-green-600 flex flex-col items-center py-4">
-                                <Check className="w-12 h-12 mb-2" />
-                                <p className="font-bold">구독이 완료되었습니다.</p>
-                                <p className="text-sm text-slate-500">내일 아침 뉴스레터에서 뵙겠습니다.</p>
+                            <div className="text-green-600 flex flex-col items-center py-4 bg-slate-50 rounded-lg">
+                                <Check className="w-8 h-8 mb-2" />
+                                <p className="font-bold">구독 완료!</p>
+                                <p className="text-sm">내일 아침에 만나요.</p>
                             </div>
                         ) : (
-                            <form onSubmit={handleSubscribe} className="space-y-4">
-                                <div className="flex flex-col md:flex-row gap-3">
+                            <form onSubmit={handleSubscribe} className="space-y-3">
+                                <div className="flex flex-col md:flex-row gap-2">
                                     <div className="relative flex-grow">
                                         <Mail className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
                                         <input
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="이메일 주소를 입력하세요"
-                                            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded focus:ring-2 focus:ring-navy-900 focus:border-navy-900 outline-none text-slate-900 placeholder-slate-400 bg-white"
+                                            placeholder="이메일 주소"
+                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded focus:ring-2 focus:ring-navy-900 outline-none text-slate-900 placeholder-slate-400"
                                             disabled={status === 'loading'}
                                         />
                                     </div>
@@ -134,26 +133,26 @@ export default function Home() {
                                         disabled={status === 'loading'}
                                         className="bg-navy-900 hover:bg-navy-800 text-white px-6 py-3 rounded font-bold transition-all flex items-center justify-center whitespace-nowrap"
                                     >
-                                        {status === 'loading' ? <Loader2 className="animate-spin w-5 h-5" /> : '무료 구독하기'}
+                                        {status === 'loading' ? <Loader2 className="animate-spin w-5 h-5" /> : '구독'}
                                     </button>
                                 </div>
 
                                 {/* Privacy Consent */}
-                                <div className="flex items-start justify-center gap-2 text-left">
+                                <div className="flex items-center justify-center gap-2">
                                     <input
                                         type="checkbox"
                                         id="privacy-check"
                                         checked={agreed}
                                         onChange={(e) => setAgreed(e.target.checked)}
-                                        className="mt-1"
+                                        className="text-navy-900 focus:ring-navy-900 rounded"
                                     />
-                                    <label htmlFor="privacy-check" className="text-xs text-slate-500 max-w-sm cursor-pointer select-none">
-                                        개인정보(이메일) 수집 및 이용에 동의합니다. 수집된 정보는 뉴스레터 발송 외의 목적으로 사용되지 않으며, 언제든 구독을 취소할 수 있습니다.
+                                    <label htmlFor="privacy-check" className="text-xs text-slate-500 cursor-pointer select-none">
+                                        개인정보 수집/활용에 동의합니다.
                                     </label>
                                 </div>
                                 {status === 'error' && (
                                     <p className="text-red-500 text-sm flex items-center justify-center gap-1">
-                                        <AlertCircle className="w-4 h-4" /> 오류가 발생했습니다. 다시 시도해주세요.
+                                        <AlertCircle className="w-4 h-4" /> 오류 발생. 다시 시도해주세요.
                                     </p>
                                 )}
                             </form>
@@ -192,7 +191,7 @@ export default function Home() {
                                                     src={content.thumbnail}
                                                     alt={content.title}
                                                     fill
-                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-400">No Image</div>
@@ -227,8 +226,8 @@ export default function Home() {
                                             key={cat}
                                             onClick={() => setActiveTab(cat)}
                                             className={`px-3 py-1 text-sm rounded-full whitespace-nowrap transition-colors ${activeTab === cat
-                                                    ? 'bg-slate-900 text-white font-medium'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                ? 'bg-slate-900 text-white font-medium'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                 }`}
                                         >
                                             {cat}
@@ -252,7 +251,7 @@ export default function Home() {
                                                     src={content.thumbnail}
                                                     alt={content.title}
                                                     fill
-                                                    className="object-cover"
+                                                    className="object-cover w-full h-full"
                                                 />
                                             )}
                                         </div>

@@ -1,69 +1,223 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ date_str }} Newsletter</title>
     <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #102a43; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-        .header { background-color: #102a43; color: #ffffff; padding: 30px 20px; text-align: center; }
-        .header h1 { margin: 0; font-family: 'Georgia', serif; font-size: 28px; letter-spacing: 1px; }
-        .header p { margin: 10px 0 0; font-size: 12px; color: #829ab1; text-transform: uppercase; letter-spacing: 2px; }
-        .content { padding: 40px 20px; }
-        .section-title { font-size: 18px; font-weight: bold; border-bottom: 2px solid #f0f4f8; padding-bottom: 10px; margin-bottom: 20px; color: #334e68; }
-        .top-story { margin-bottom: 40px; }
-        .top-story img { width: 100%; height: auto; border-radius: 4px; display: block; }
-        .top-story h2 { font-size: 20px; margin: 15px 0 10px; line-height: 1.4; color: #102a43; }
-        .top-story p { font-size: 14px; line-height: 1.6; color: #486581; margin: 0 0 15px; }
-        .top-story .source { font-size: 11px; color: #829ab1; font-weight: bold; text-transform: uppercase; }
-        .list-item { display: flex; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f4f8; }
-        .list-item:last-child { border-bottom: none; }
-        .list-item img { width: 120px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px; background-color: #f0f4f8; }
-        .list-item-content { flex: 1; }
-        .list-item h3 { font-size: 15px; margin: 0 0 5px; line-height: 1.4; }
-        .list-item h3 a { color: #102a43; text-decoration: none; }
-        .list-item .meta { font-size: 11px; color: #829ab1; margin-top: 5px; }
-        .footer { background-color: #f0f4f8; padding: 40px 20px; text-align: center; font-size: 12px; color: #829ab1; }
-        .footer a { color: #627d98; text-decoration: underline; }
-        .btn { display: inline-block; padding: 8px 16px; background-color: #102a43; color: white; text-decoration: none; font-size: 12px; border-radius: 4px; margin-top: 5px; }
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            color: #102a43;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background-color: #102a43;
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-family: 'Georgia', serif;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            font-size: 14px;
+            color: #829ab1;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 2px solid #f0f4f8;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #334e68;
+            margin-top: 40px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        /* Hero Article */
+        .top-story {
+            margin-bottom: 30px;
+        }
+
+        .top-story img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .top-story h2 {
+            font-size: 26px;
+            margin: 10px 0 10px;
+            line-height: 1.3;
+            color: #102a43;
+            font-weight: bold;
+        }
+
+        .top-story .source {
+            font-size: 13px;
+            color: #2cb1bc;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .top-story a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        /* List Items */
+        .list-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .list-item img {
+            width: 100px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 15px;
+            background-color: #f0f4f8;
+            flex-shrink: 0;
+        }
+
+        .list-item-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .list-item h3 {
+            font-size: 18px;
+            margin: 0 0 4px;
+            line-height: 1.4;
+            font-weight: bold;
+        }
+
+        .list-item h3 a {
+            color: #102a43;
+            text-decoration: none;
+        }
+
+        .list-item .meta {
+            font-size: 12px;
+            color: #829ab1;
+        }
+
+        /* Share Button */
+        .share-section {
+            text-align: center;
+            margin: 20px 0 30px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .share-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #243b53;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .footer {
+            background-color: #f0f4f8;
+            padding: 40px 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #829ab1;
+        }
+
+        .footer a {
+            color: #627d98;
+            text-decoration: underline;
+        }
+
         @media only screen and (max-width: 600px) {
-            .list-item { flex-direction: column; }
-            .list-item img { width: 100%; height: auto; margin-right: 0; margin-bottom: 10px; }
+            .list-item h3 {
+                font-size: 17px;
+            }
+
+            .top-story h2 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>ONEW</h1>
-            <p>{{ date_str }} Daily Briefing</p>
+            <p>{{ date_str }} 데일리 브리핑</p>
         </div>
-        
+
         <div class="content">
-            <!-- Top Stories (First 1) -->
-            {% if contents %}
-            <div class="section-title">Today's Focus</div>
+            <!-- Top Stories (Top 6 Mixed) -->
+            {% if contents.top_stories %}
+            <div class="section-title">오늘의 헤드라인</div>
+
+            <!-- Hero Article (First Item) -->
+            {% set hero = contents.top_stories[0] %}
             <div class="top-story">
-                <a href="{{ contents[0].url }}" style="text-decoration:none;">
-                    <img src="{{ contents[0].thumbnail }}" alt="{{ contents[0].title }}">
-                    <div class="source">{{ contents[0].opinion_leader }}</div>
-                    <h2>{{ contents[0].title }}</h2>
-                    <p>{{ contents[0].description }}</p>
-                    <span class="btn">Watch Now &rarr;</span>
+                <a href="{{ hero.url }}">
+                    <img src="{{ hero.thumbnail }}" alt="{{ hero.title }}">
+                    <div class="source">{{ hero.opinion_leader }}</div>
+                    <h2>{{ hero.title }}</h2>
                 </a>
             </div>
-            {% endif %}
 
-            <!-- Other Stories -->
-            {% if contents|length > 1 %}
-            <div class="section-title">More Insights</div>
-            {% for item in contents[1:] %}
+            <!-- Share Button -->
+            <div class="share-section">
+                <a href="https://opnionnewsletter.web.app" class="share-btn">친구에게 공유하기</a>
+            </div>
+
+            <!-- Remaining Top Stories -->
+            {% for item in contents.top_stories[1:] %}
             <div class="list-item">
                 <a href="{{ item.url }}" style="text-decoration:none; display:flex; color:inherit; width:100%;">
-                    <div style="flex-shrink:0;">
-                       <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
-                    </div>
+                    <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
                     <div class="list-item-content">
                         <h3>{{ item.title }}</h3>
                         <div class="meta">{{ item.opinion_leader }}</div>
@@ -72,15 +226,34 @@
             </div>
             {% endfor %}
             {% endif %}
+
+            <!-- Category Stories -->
+            {% if contents.category_stories %}
+            {% for category, items in contents.category_stories.items() %}
+            <div class="section-title">{{ category }} 인사이트</div>
+            {% for item in items %}
+            <div class="list-item">
+                <a href="{{ item.url }}" style="text-decoration:none; display:flex; color:inherit; width:100%;">
+                    <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
+                    <div class="list-item-content">
+                        <h3>{{ item.title }}</h3>
+                        <!-- <div class="meta">{{ item.opinion_leader }}</div> - Redundant if header is category -->
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
         </div>
 
         <div class="footer">
             <p>&copy; 2026 Opinion Newsletter. All rights reserved.</p>
             <p>
-                You received this email because you subscribed to ONEW.<br>
-                <a href="#">Unsubscribe</a> | <a href="#">View in Browser</a>
+                ONEW를 구독해 주셔서 감사합니다.<br>
+                <a href="#">구독 취소</a> | <a href="#">웹에서 보기</a>
             </p>
         </div>
     </div>
 </body>
+
 </html>
