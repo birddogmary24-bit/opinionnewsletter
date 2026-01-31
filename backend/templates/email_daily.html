@@ -34,7 +34,7 @@
             font-size: 28px;
             letter-spacing: 1px;
             color: #ef4444;
-            font-weight: normal;
+            font-weight: bold;
         }
 
         .header p {
@@ -86,7 +86,7 @@
 
         .top-story .source {
             font-size: 13px;
-            color: #ef4444;
+            color: #cbd5e1;
             font-weight: bold;
             margin-top: 8px;
             display: block;
@@ -100,52 +100,71 @@
 
         /* List Items */
         .list-item {
-            display: flex;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #334155;
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+            display: block;
+            /* Vertical layout */
+            margin-bottom: 25px;
             padding-bottom: 0;
+            border-bottom: none;
         }
 
         .list-item img {
-            width: 100px;
-            height: 70px;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
             object-fit: cover;
-            border-radius: 4px;
-            margin-right: 15px;
+            border-radius: 8px;
+            margin-right: 0;
+            margin-bottom: 12px;
             background-color: #334155;
-            flex-shrink: 0;
+            display: block;
         }
 
         .list-item-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            display: block;
         }
 
         .list-item h3 {
-            font-size: 18px;
-            margin: 0 0 6px;
+            font-size: 20px;
+            margin: 0 0 8px;
             line-height: 1.4;
             font-weight: bold;
             color: #ffffff;
         }
 
-        .list-item h3 a {
-            color: #ffffff;
+        .list-item .meta {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* Detail Grid */
+        .detail-grid {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .detail-item {
+            display: inline-block;
+            width: 48%;
+            margin-bottom: 15px;
+            vertical-align: top;
             text-decoration: none;
         }
 
-        .list-item .meta {
-            font-size: 12px;
-            color: #ef4444;
-            font-weight: 500;
+        .detail-item:nth-child(even) {
+            margin-left: 3%;
+        }
+
+        .detail-item img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            border-radius: 4px;
+            background-color: #334155;
+            display: block;
         }
 
         /* Share Button */
@@ -153,16 +172,17 @@
             text-align: center;
             margin: 20px 0 30px;
             padding: 15px;
-            background-color: #0f172a;
+            background-color: transparent;
             border-radius: 8px;
             border: 1px solid #334155;
         }
 
         .share-btn {
             display: inline-block;
-            padding: 12px 24px;
-            background-color: #ef4444;
-            color: white;
+            padding: 10px 24px;
+            background-color: transparent;
+            color: #cbd5e1;
+            border: 1px solid #475569;
             text-decoration: none;
             font-size: 14px;
             border-radius: 4px;
@@ -170,7 +190,8 @@
         }
 
         .share-btn:hover {
-            background-color: #dc2626;
+            border-color: #94a3b8;
+            color: #ffffff;
         }
 
         .footer {
@@ -230,32 +251,28 @@
             <!-- Remaining Top Stories -->
             {% for item in contents.top_stories[1:] %}
             <div class="list-item">
-                <a href="{{ item.url }}" style="text-decoration:none; display:flex; color:inherit; width:100%;">
+                <a href="{{ item.url }}" style="text-decoration:none; color:inherit; width:100%;">
                     <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
                     <div class="list-item-content">
-                        <h3>{{ item.title }}</h3>
                         <div class="meta">{{ item.opinion_leader }}</div>
+                        <h3>{{ item.title }}</h3>
                     </div>
                 </a>
             </div>
             {% endfor %}
             {% endif %}
 
-            <!-- Category Stories -->
+            <!-- Category Stories Grid -->
             {% if contents.category_stories %}
             {% for category, items in contents.category_stories.items() %}
             <div class="section-title">{{ category }} 인사이트</div>
-            {% for item in items %}
-            <div class="list-item">
-                <a href="{{ item.url }}" style="text-decoration:none; display:flex; color:inherit; width:100%;">
+            <div class="detail-grid">
+                {% for item in items %}
+                <a href="{{ item.url }}" class="detail-item">
                     <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
-                    <div class="list-item-content">
-                        <h3>{{ item.title }}</h3>
-                        <!-- <div class="meta">{{ item.opinion_leader }}</div> - Redundant if header is category -->
-                    </div>
                 </a>
+                {% endfor %}
             </div>
-            {% endfor %}
             {% endfor %}
             {% endif %}
         </div>
