@@ -36,6 +36,13 @@
                 <!-- Main Container -->
                 <table border="0" cellpadding="0" cellspacing="0" width="600" class="full-width"
                     style="max-width: 600px; width: 100%;">
+                    <!-- Tracking Pixel (Invisible but not 'display: none' to avoid blocking) -->
+                    <tr>
+                        <td style="height: 0; line-height: 0; font-size: 0;">
+                            <img src="{{ tracking_url }}/api/track/open?id={{ mail_id }}" width="1" height="1"
+                                border="0" style="opacity: 0; min-height: 1px; min-width: 1px;" alt="" />
+                        </td>
+                    </tr>
                     <!-- Header -->
                     <tr>
                         <td align="center" style="padding: 50px 20px 30px;">
@@ -156,9 +163,6 @@
                                     href="{{ tracking_url }}/api/track/click?id={{ mail_id }}&url={{ 'https://opinionnewsletter-web-810426728503.asia-northeast3.run.app' | urlencode }}&target=website"
                                     style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
                             </p>
-                            <!-- Tracking Pixel -->
-                            <img src="{{ tracking_url }}/api/track/open?id={{ mail_id }}" width="1" height="1"
-                                style="display:none !important;" />
                         </td>
                     </tr>
                 </table>

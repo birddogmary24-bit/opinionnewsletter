@@ -36,6 +36,15 @@
                 <!-- Main Container -->
                 <table border="0" cellpadding="0" cellspacing="0" width="600" class="full-width"
                     style="max-width: 600px; width: 100%;">
+                    <!-- Tracking Pixel (Invisible but not 'display: none' to avoid blocking) -->
+                    {{#if mailId}}
+                    <tr>
+                        <td style="height: 0; line-height: 0; font-size: 0;">
+                            <img src="{{trackingUrl}}/api/track/open?id={{mailId}}" width="1" height="1" border="0"
+                                style="opacity: 0; min-height: 1px; min-width: 1px;" alt="" />
+                        </td>
+                    </tr>
+                    {{/if}}
                     <!-- Header -->
                     <tr>
                         <td align="center" style="padding: 50px 20px 30px;">
@@ -69,28 +78,30 @@
                     <tr>
                         <td style="padding: 0 20px 40px;">
                             {{#if ../mailId}}
-                            <a href="{{../trackingUrl}}/api/track/click?id={{../mailId}}&url={{encodeURL url}}&target=top_story" style="text-decoration: none; display: block;">
-                            {{else}}
-                            <a href="{{url}}" style="text-decoration: none; display: block;">
-                            {{/if}}
-                                <img src="{{thumbnail}}" alt="{{title}}" width="560"
-                                    style="width: 100%; height: auto; border-radius: 16px; border: 1px solid #1e293b; display: block;" />
-                                <div style="padding-top: 15px;">
-                                    <span
-                                        style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;">{{opinion_leader}}</span>
-                                    <!-- Reduced title font size significantly -->
-                                    <h2
-                                        style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
-                                        {{title}}</h2>
-                                    <div style="margin-top: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
-                                        {{#if view_count}}
-                                        조회수 {{formatNumber view_count}}
-                                        {{else}}
-                                        조회수 없음
-                                        {{/if}}
+                            <a href="{{../trackingUrl}}/api/track/click?id={{../mailId}}&url={{encodeURL url}}&target=top_story"
+                                style="text-decoration: none; display: block;">
+                                {{else}}
+                                <a href="{{url}}" style="text-decoration: none; display: block;">
+                                    {{/if}}
+                                    <img src="{{thumbnail}}" alt="{{title}}" width="560"
+                                        style="width: 100%; height: auto; border-radius: 16px; border: 1px solid #1e293b; display: block;" />
+                                    <div style="padding-top: 15px;">
+                                        <span
+                                            style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;">{{opinion_leader}}</span>
+                                        <!-- Reduced title font size significantly -->
+                                        <h2
+                                            style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
+                                            {{title}}</h2>
+                                        <div
+                                            style="margin-top: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
+                                            {{#if view_count}}
+                                            조회수 {{formatNumber view_count}}
+                                            {{else}}
+                                            조회수 없음
+                                            {{/if}}
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
+                                </a>
                         </td>
                     </tr>
                     {{/each}}
@@ -122,27 +133,28 @@
                                 <div class="grid-item"
                                     style="display: inline-block; width: 280px; margin: 0 5px 20px 5px; vertical-align: top;">
                                     {{#if ../../mailId}}
-                                    <a href="{{../../trackingUrl}}/api/track/click?id={{../../mailId}}&url={{encodeURL url}}&target=category_item" style="text-decoration: none; display: block;">
-                                    {{else}}
-                                    <a href="{{url}}" style="text-decoration: none; display: block;">
-                                    {{/if}}
-                                        <img src="{{thumbnail}}" alt="{{title}}" width="280"
-                                            style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #1e293b; display: block;" />
-                                        <div style="padding-top: 10px;">
-                                            <h3
-                                                style="margin: 0; font-size: 14px; font-weight: 400; color: #cbd5e1; line-height: 1.4; text-decoration: none; display: block;">
-                                                {{title}}
-                                            </h3>
-                                            <div
-                                                style="margin-top: 4px; font-size: 11px; color: #64748b; font-weight: 400;">
-                                                {{#if view_count}}
-                                                조회수 {{formatNumber view_count}}
-                                                {{else}}
-                                                조회수 없음
-                                                {{/if}}
+                                    <a href="{{../../trackingUrl}}/api/track/click?id={{../../mailId}}&url={{encodeURL url}}&target=category_item"
+                                        style="text-decoration: none; display: block;">
+                                        {{else}}
+                                        <a href="{{url}}" style="text-decoration: none; display: block;">
+                                            {{/if}}
+                                            <img src="{{thumbnail}}" alt="{{title}}" width="280"
+                                                style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #1e293b; display: block;" />
+                                            <div style="padding-top: 10px;">
+                                                <h3
+                                                    style="margin: 0; font-size: 14px; font-weight: 400; color: #cbd5e1; line-height: 1.4; text-decoration: none; display: block;">
+                                                    {{title}}
+                                                </h3>
+                                                <div
+                                                    style="margin-top: 4px; font-size: 11px; color: #64748b; font-weight: 400;">
+                                                    {{#if view_count}}
+                                                    조회수 {{formatNumber view_count}}
+                                                    {{else}}
+                                                    조회수 없음
+                                                    {{/if}}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </a>
+                                        </a>
                                 </div>
                                 {{/each}}
                             </div>
@@ -151,18 +163,7 @@
                     {{/each}}
                     {{/if}}
 
-                    <!-- Tracking Pixel (1x1 invisible image) -->
-                    {{#if mailId}}
-                    <tr>
-                        <td style="height: 0; line-height: 0; font-size: 0;">
-                            <img src="{{trackingUrl}}/api/track/open?id={{mailId}}"
-                                 width="1"
-                                 height="1"
-                                 style="display: block; border: 0;"
-                                 alt="" />
-                        </td>
-                    </tr>
-                    {{/if}}
+
 
                     <!-- Footer -->
                     <tr>
@@ -173,10 +174,10 @@
                                     style="color: #64748b; text-decoration: underline;">수신거부</a>&nbsp;&nbsp;•&nbsp;&nbsp;
                                 {{#if mailId}}
                                 <a href="{{trackingUrl}}/api/track/click?id={{mailId}}&url={{encodeURL trackingUrl}}&target=footer_website"
-                                   style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
+                                    style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
                                 {{else}}
                                 <a href="https://opinion-newsletter-web-810426728503.us-central1.run.app"
-                                   style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
+                                    style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
                                 {{/if}}
                             </p>
                         </td>
