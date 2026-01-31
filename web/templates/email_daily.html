@@ -1,0 +1,190 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>오뉴 - 모닝 리포트</title>
+    <style type="text/css">
+        @media only screen and (max-width: 600px) {
+            .full-width {
+                width: 100% !important;
+                display: block !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+
+            .grid-item {
+                width: 100% !important;
+                display: block !important;
+                margin: 0 0 20px 0 !important;
+            }
+
+            .grid-item img {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #020617; font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica', Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table border="0" cellpadding="0" cellspacing="0" width="600" class="full-width"
+                    style="max-width: 600px; width: 100%;">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 50px 20px 30px;">
+                            <h1
+                                style="margin: 0; font-size: 36px; font-weight: 900; color: #60a5fa; letter-spacing: -2px; line-height: 1; font-family: 'Pretendard', sans-serif;">
+                                오뉴</h1>
+                            <p
+                                style="margin: 12px 0 0; font-size: 11px; color: #475569; font-weight: bold; letter-spacing: 3px; text-transform: uppercase;">
+                                DAILY REPORT</p>
+                        </td>
+                    </tr>
+
+                    <!-- Top Stories Section -->
+                    {{#if contents.top_stories}}
+                    <tr>
+                        <td style="padding: 0 20px 15px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="border-left: 3px solid #3b82f6;">
+                                <tr>
+                                    <td style="padding-left: 12px;">
+                                        <span
+                                            style="font-size: 13px; font-weight: 900; color: #60a5fa; letter-spacing: 1px; text-transform: uppercase;">Today's
+                                            Highlights</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    {{#each contents.top_stories}}
+                    <tr>
+                        <td style="padding: 0 20px 40px;">
+                            {{#if ../mailId}}
+                            <a href="{{../trackingUrl}}/api/track/click?id={{../mailId}}&url={{encodeURL url}}&target=top_story" style="text-decoration: none; display: block;">
+                            {{else}}
+                            <a href="{{url}}" style="text-decoration: none; display: block;">
+                            {{/if}}
+                                <img src="{{thumbnail}}" alt="{{title}}" width="560"
+                                    style="width: 100%; height: auto; border-radius: 16px; border: 1px solid #1e293b; display: block;" />
+                                <div style="padding-top: 15px;">
+                                    <span
+                                        style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;">{{opinion_leader}}</span>
+                                    <!-- Reduced title font size significantly -->
+                                    <h2
+                                        style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
+                                        {{title}}</h2>
+                                    <div style="margin-top: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
+                                        {{#if view_count}}
+                                        조회수 {{formatNumber view_count}}
+                                        {{else}}
+                                        조회수 없음
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </a>
+                        </td>
+                    </tr>
+                    {{/each}}
+                    {{/if}}
+
+                    <!-- Category Sections -->
+                    {{#if contents.category_stories}}
+                    {{#each contents.category_stories}}
+                    <tr>
+                        <td style="padding: 30px 20px 20px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="border-bottom: 2px solid #1e293b;">
+                                <tr>
+                                    <td style="padding-bottom: 12px;">
+                                        <h2
+                                            style="margin: 0; font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">
+                                            {{@key}}</h2>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0 10px;">
+                            <div style="font-size: 0; text-align: left;">
+                                {{#each this}}
+                                <!-- Grid Item: PC 2-col (280px), Mobile 1-col (via CSS) -->
+                                <div class="grid-item"
+                                    style="display: inline-block; width: 280px; margin: 0 5px 20px 5px; vertical-align: top;">
+                                    {{#if ../../mailId}}
+                                    <a href="{{../../trackingUrl}}/api/track/click?id={{../../mailId}}&url={{encodeURL url}}&target=category_item" style="text-decoration: none; display: block;">
+                                    {{else}}
+                                    <a href="{{url}}" style="text-decoration: none; display: block;">
+                                    {{/if}}
+                                        <img src="{{thumbnail}}" alt="{{title}}" width="280"
+                                            style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #1e293b; display: block;" />
+                                        <div style="padding-top: 10px;">
+                                            <h3
+                                                style="margin: 0; font-size: 14px; font-weight: 400; color: #cbd5e1; line-height: 1.4; text-decoration: none; display: block;">
+                                                {{title}}
+                                            </h3>
+                                            <div
+                                                style="margin-top: 4px; font-size: 11px; color: #64748b; font-weight: 400;">
+                                                {{#if view_count}}
+                                                조회수 {{formatNumber view_count}}
+                                                {{else}}
+                                                조회수 없음
+                                                {{/if}}
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                    {{/if}}
+
+                    <!-- Tracking Pixel (1x1 invisible image) -->
+                    {{#if mailId}}
+                    <tr>
+                        <td style="height: 0; line-height: 0; font-size: 0;">
+                            <img src="{{trackingUrl}}/api/track/open?id={{mailId}}"
+                                 width="1"
+                                 height="1"
+                                 style="display: block; border: 0;"
+                                 alt="" />
+                        </td>
+                    </tr>
+                    {{/if}}
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding: 80px 20px 40px; border-top: 1px solid #1e293b;">
+                            <p style="margin: 0; font-size: 11px; color: #475569; line-height: 1.8;">
+                                &copy; 2026 ONEW. All rights reserved.<br />
+                                <a href="#"
+                                    style="color: #64748b; text-decoration: underline;">수신거부</a>&nbsp;&nbsp;•&nbsp;&nbsp;
+                                {{#if mailId}}
+                                <a href="{{trackingUrl}}/api/track/click?id={{mailId}}&url={{encodeURL trackingUrl}}&target=footer_website"
+                                   style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
+                                {{else}}
+                                <a href="https://opinion-newsletter-web-810426728503.us-central1.run.app"
+                                   style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
+                                {{/if}}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

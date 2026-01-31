@@ -3,6 +3,19 @@ import { cookies } from 'next/headers';
 import { db } from '@/lib/firebase';
 import { decryptEmail } from '@/lib/crypto';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
+import Handlebars from 'handlebars';
+
+// Register Handlebars helpers
+Handlebars.registerHelper('encodeURL', function(url: string) {
+    return encodeURIComponent(url);
+});
+
+Handlebars.registerHelper('formatNumber', function(num: number) {
+    if (typeof num !== 'number') return '0';
+    return num.toLocaleString('ko-KR');
+});
 
 export async function POST(request: Request) {
     try {
@@ -16,9 +29,14 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { type, subscriberId } = body; // type: 'all' | 'individual'
 
-        // 2. Fetch Content (Mocking fetching 'today's' content for now, or just send a welcome email)
-        // Ideally we fetch from 'contents' collection. Let's do a simple fetch.
-        const contentSnapshot = await db.collection('contents').orderBy('scraped_at', 'desc').limit(5).get();
+        // 2. Fetch Content (최대 30개, 24시간 이내 데이터)
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const contentSnapshot = await db.collection('contents')
+            .where('scraped_at', '>=', oneDayAgo)
+            .orderBy('scraped_at', 'desc')
+            .limit(30)
+            .get();
+
         const contents = contentSnapshot.docs.map(d => d.data());
 
         // 3. Determine Recipients
@@ -42,48 +60,75 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, message: 'No valid recipients found' });
         }
 
-        // 4. Configure Transporter
-        // NOTE: User needs to set these ENV vars in Cloud Run!
+        // 4. Create mail_history entry first to get mail_id
+        const mailHistoryRef = await db.collection('mail_history').add({
+            sent_at: new Date().toISOString(),
+            type,
+            recipient_count: recipients.length,
+            status: 'success',
+            simulated: !process.env.GMAIL_USER,
+            open_count: 0,      // Initialize tracking counters
+            click_count: 0,     // Initialize tracking counters
+        });
+
+        const mailId = mailHistoryRef.id;  // Extract Firestore-generated ID
+
+        // 5. Configure Transporter
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: process.env.GMAIL_USER || 'placeholder@gmail.com', // User needs to set this
+                user: process.env.GMAIL_USER || 'placeholder@gmail.com',
                 pass: process.env.GMAIL_APP_PASSWORD || 'placeholder_password',
             },
         });
 
-        // 5. Send Emails
-        // For MVP, sending sequentially. For scale, use a queue.
-        const currDate = new Date().toLocaleDateString('ko-KR');
+        // 6. Prepare Template Data
+        // Top 3 stories by view_count
+        const topStories = contents
+            .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
+            .slice(0, 3);
 
-        // Simple HTML Template
-        const htmlContent = `
-            <div style="font-family: serif; max-width: 600px; margin: 0 auto; color: #1a202c;">
-                <div style="text-align: center; padding: 20px; border-bottom: 2px solid #3b82f6;">
-                    <h1 style="margin:0; font-size: 28px; color: #1e293b; font-weight: 900;">오뉴</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b; font-weight: 700; letter-spacing: 0.1em;">오늘의 오피니언 뉴스</p>
-                    <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">${currDate}</p>
-                </div>
-                <div style="padding: 20px;">
-                    <h2 style="font-size: 18px; border-left: 4px solid #3b82f6; padding-left: 12px; margin-bottom: 20px; color: #0f172a;">오늘의 주요 리포트</h2>
-                    ${contents.length > 0 ? contents.map((c: any) => `
-                        <div style="margin-bottom: 20px;">
-                            <h3 style="margin: 0 0 5px 0;">${c.title}</h3>
-                            <p style="margin: 0; color: #4a5568; font-size: 14px;">${c.opinion_leader} • ${c.description?.substring(0, 100)}...</p>
-                            <a href="${c.url}" style="color: #2b6cb0; font-size: 12px;">Read More</a>
-                        </div>
-                    `).join('') : '<p>No new updates today.</p>'}
-                </div>
-                <div style="background-color: #f7fafc; padding: 20px; text-align: center; font-size: 12px; color: #718096;">
-                    <p>Unless you are subscribed, ignore this email.</p>
-                </div>
-            </div>
-        `;
+        // Category-based stories
+        // For demo, we'll group remaining items by opinion_leader or category field
+        // Adjust this logic based on your actual data structure
+        const categoryStories: Record<string, any[]> = {};
+        const categories = ['경제', '정치', '사회', '교육', '문화', 'IT/테크'];
 
-        // If no credentials are set, we simulate per request
+        // Simple categorization: if opinion_leader or title contains category keyword
+        const remainingContents = contents.slice(3); // Skip top 3
+
+        categories.forEach(category => {
+            const categoryItems = remainingContents.filter((c: any) => {
+                const text = `${c.opinion_leader} ${c.title}`.toLowerCase();
+                return text.includes(category.toLowerCase());
+            }).slice(0, 5); // Max 5 per category
+
+            if (categoryItems.length > 0) {
+                categoryStories[category] = categoryItems;
+            }
+        });
+
+        // 7. Load and Render Template
+        const templatePath = path.join(process.cwd(), 'templates', 'email_daily.html');
+        const templateSource = fs.readFileSync(templatePath, 'utf-8');
+        const template = Handlebars.compile(templateSource);
+
+        const trackingUrl = 'https://opinion-newsletter-web-810426728503.us-central1.run.app';
+
+        const htmlContent = template({
+            contents: {
+                top_stories: topStories,
+                category_stories: categoryStories
+            },
+            mailId,
+            trackingUrl,
+            date_str: new Date().toLocaleDateString('ko-KR')
+        });
+
+        // 8. Send Emails
+        // If no credentials are set, we simulate
         if (!process.env.GMAIL_USER) {
             console.log("⚠️ Simulation Mode: Would send to", recipients.length, "recipients");
-            // Return success for UI demo even if not actually sent
             return NextResponse.json({ success: true, count: recipients.length, simulated: true });
         }
 
@@ -99,20 +144,11 @@ export async function POST(request: Request) {
 
         await Promise.allSettled(promises);
 
-        // 6. Log History
-        await db.collection('mail_history').add({
-            sent_at: new Date().toISOString(),
-            type,
-            recipient_count: recipients.length,
-            status: 'success',
-            simulated: !process.env.GMAIL_USER
-        });
-
         return NextResponse.json({ success: true, count: recipients.length });
 
     } catch (error) {
         console.error("Sending error:", error);
-        // Log Error also
+        // Log Error
         try {
             await db.collection('mail_history').add({
                 sent_at: new Date().toISOString(),

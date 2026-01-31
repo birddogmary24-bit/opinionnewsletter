@@ -19,6 +19,8 @@ interface MailLog {
     recipient_count: number;
     status: string;
     simulated?: boolean;
+    open_count?: number;      // Add tracking metrics
+    click_count?: number;     // Add tracking metrics
 }
 
 interface Quota {
@@ -136,6 +138,40 @@ export default function AdminDashboard() {
         });
     };
 
+    const calculateAverageOpenRate = () => {
+        const validLogs = history.filter(log =>
+            log.status === 'success' &&
+            log.recipient_count > 0 &&
+            !log.simulated
+        );
+
+        if (validLogs.length === 0) return '0.0';
+
+        const totalOpenRate = validLogs.reduce((sum, log) => {
+            const openRate = ((log.open_count || 0) / log.recipient_count) * 100;
+            return sum + openRate;
+        }, 0);
+
+        return (totalOpenRate / validLogs.length).toFixed(1);
+    };
+
+    const calculateAverageClickRate = () => {
+        const validLogs = history.filter(log =>
+            log.status === 'success' &&
+            log.recipient_count > 0 &&
+            !log.simulated
+        );
+
+        if (validLogs.length === 0) return '0.0';
+
+        const totalClickRate = validLogs.reduce((sum, log) => {
+            const clickRate = ((log.click_count || 0) / log.recipient_count) * 100;
+            return sum + clickRate;
+        }, 0);
+
+        return (totalClickRate / validLogs.length).toFixed(1);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
@@ -188,7 +224,7 @@ export default function AdminDashboard() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
                 {/* Top Row: Quick Stats & Primary Action */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-                    <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5 shadow-2xl">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-slate-500 text-xs font-black uppercase tracking-widest">전체 구독자</h3>
@@ -211,6 +247,30 @@ export default function AdminDashboard() {
                             <div className="flex items-baseline space-x-2">
                                 <p className="text-5xl font-black text-white">{stats.active.toLocaleString()}</p>
                                 <span className="text-slate-500 font-bold">명</span>
+                            </div>
+                        </div>
+                        <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5 shadow-2xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-slate-500 text-xs font-black uppercase tracking-widest">평균 오픈율</h3>
+                                <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20">
+                                    <Mail className="w-6 h-6 text-blue-400" />
+                                </div>
+                            </div>
+                            <div className="flex items-baseline space-x-2">
+                                <p className="text-5xl font-black text-white">{calculateAverageOpenRate()}</p>
+                                <span className="text-slate-500 font-bold">%</span>
+                            </div>
+                        </div>
+                        <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5 shadow-2xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-slate-500 text-xs font-black uppercase tracking-widest">평균 클릭율</h3>
+                                <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20">
+                                    <Mail className="w-6 h-6 text-purple-400" />
+                                </div>
+                            </div>
+                            <div className="flex items-baseline space-x-2">
+                                <p className="text-5xl font-black text-white">{calculateAverageClickRate()}</p>
+                                <span className="text-slate-500 font-bold">%</span>
                             </div>
                         </div>
                     </div>
@@ -444,13 +504,16 @@ export default function AdminDashboard() {
                                         <th className="px-8 py-5">발송 시간</th>
                                         <th className="px-8 py-5">유형</th>
                                         <th className="px-8 py-5">발송 건수</th>
+                                        <th className="px-8 py-5">오픈 수</th>
+                                        <th className="px-8 py-5">클릭 수</th>
+                                        <th className="px-8 py-5">오픈율</th>
                                         <th className="px-8 py-5 text-right">상태</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5 text-sm">
                                     {history.length === 0 ? (
                                         <tr>
-                                            <td colSpan={4} className="px-8 py-20 text-center text-slate-500 font-bold italic">
+                                            <td colSpan={7} className="px-8 py-20 text-center text-slate-500 font-bold italic">
                                                 발송 이력이 없습니다.
                                             </td>
                                         </tr>
@@ -467,6 +530,17 @@ export default function AdminDashboard() {
                                                 </td>
                                                 <td className="px-8 py-5 font-black text-white">
                                                     {log.recipient_count}건
+                                                </td>
+                                                <td className="px-8 py-5 font-bold text-blue-400">
+                                                    {log.open_count || 0}
+                                                </td>
+                                                <td className="px-8 py-5 font-bold text-purple-400">
+                                                    {log.click_count || 0}
+                                                </td>
+                                                <td className="px-8 py-5 font-bold text-green-400">
+                                                    {log.recipient_count > 0
+                                                        ? `${((log.open_count || 0) / log.recipient_count * 100).toFixed(1)}%`
+                                                        : '-'}
                                                 </td>
                                                 <td className="px-8 py-5 text-right">
                                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase ${log.status === 'success' ? 'text-green-400' : 'text-red-400'}`}>

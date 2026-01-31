@@ -22,15 +22,24 @@ class EmailService:
         template_dir = os.path.join(BASE_DIR, 'templates')
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
 
-    def render_template(self, contents):
+    def render_template(self, contents, mail_id=None):
         """
         Renders the newsletter HTML template with the given contents.
         """
         template = self.jinja_env.get_template('email_daily.html')
         date_str = datetime.datetime.now().strftime('%Y.%m.%d')
-        return template.render(contents=contents, date_str=date_str)
+        
+        # Base URL for tracking (Update with your actual production domain)
+        base_tracking_url = "https://opinion-newsletter-web-810426728503.us-central1.run.app"
+        
+        return template.render(
+            contents=contents, 
+            date_str=date_str, 
+            mail_id=mail_id,
+            tracking_url=base_tracking_url
+        )
 
-    def send_newsletter(self, to_emails, contents):
+    def send_newsletter(self, to_emails, contents, mail_id=None):
         """
         Sends the newsletter to a list of recipients.
         For MVP, we send individually or in bcc to avoid exposing emails.

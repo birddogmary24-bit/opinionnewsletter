@@ -21,7 +21,9 @@ export async function GET() {
                 type: data.type,
                 recipient_count: data.recipient_count,
                 status: data.status,
-                simulated: data.simulated
+                simulated: data.simulated,
+                open_count: data.open_count || 0,      // Add tracking metrics
+                click_count: data.click_count || 0,    // Add tracking metrics
             };
         });
 

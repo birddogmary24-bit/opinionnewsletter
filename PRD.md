@@ -43,10 +43,10 @@
     - 수신자 수와 타임스탬프를 포함한 상세 `mail_history` 로그.
   - **요약 통계:** 전체 구독자 및 활성 구독자 수 현황.
 
-### 3.5. 뉴스레터 서비스 (Newsletter Service - 구현 완료)
-- **발송 시간:** 자동 스케줄러를 통해 매일 아침 07:00 AM (KST) 발송.
-- **포맷:** 반응형 HTML 이메일.
-- **콘텐츠 구조:** 상단 5개의 "Focus" 아이템 리스트 후 카테고리별 "Archive" 리스트 제공.
+### 3.6. 콘텐츠 큐레이션 규칙 (Curation Rules - 구현 완료)
+- **최신성 필터링**: 24시간 이내에 수집(scraped)된 데이터만 선별하여 제공.
+- **수량 제한**: 전체 콘텐츠 개수를 최대 30개로 한정하여 가독성 유지.
+- **순위 산정**: 전체 30개 콘텐츠 중 **조회수(view_count)**가 가장 높은 상위 3개를 "Top 3 Highlights"로 선정.
 
 ## 4. 기술 아키텍처 (Technical Architecture)
 **클라우드 인프라:** Google Cloud Platform (GCP)
@@ -59,7 +59,7 @@
 ## 5. 배포 상태 (Deployment Status)
 - **상태:** **Production Ready / 배포 완료**
 - **클라우드 계정:** GCP (`birddogmary24@gmail.com`)
-- **Git Repo:** 최신 UI 최적화(모바일 및 타이포그래피 개선) 사항 반영 및 동기화 완료.
+- **Git Repo:** 최신 UI 및 큐레이션 로직 (24h 필터, 30개 제한, 조회수 기반 Top 3) 반영 완료.
 - **CI/CD:** Cloud Run (GCP CLI)을 통한 수동 배포 프로세스.
 
 ## 6. 디자인 및 UX 원칙 (Design & UX Principles)
