@@ -79,26 +79,30 @@ export default function Home() {
         : remainingContents.filter(c => c.opinion_leader.includes(activeTab));
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white font-sans">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white font-sans selection:bg-blue-500/30">
             {/* Ambient background effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+                <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]"></div>
             </div>
 
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-slate-800/50 backdrop-blur-xl border-b border-slate-700/50">
-                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" style={{ fontFamily: 'Pretendard, sans-serif' }}>
-                            오뉴
-                        </span>
-                        <span className="text-slate-500 text-sm">-</span>
-                        <span className="text-slate-400 text-sm font-medium">오피니언 뉴스레터</span>
+            <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/5">
+                <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        <div className="flex flex-col md:flex-row md:items-end md:space-x-3">
+                            <span className="text-3xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-size-200 animate-gradient text-transparent bg-clip-text tracking-tighter" style={{ fontFamily: 'Pretendard, sans-serif' }}>
+                                오뉴
+                            </span>
+                            <div className="flex items-center space-x-2 pb-1">
+                                <span className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-700"></span>
+                                <span className="text-lg font-bold text-slate-100 uppercase tracking-tight">오피니언 뉴스레터</span>
+                            </div>
+                        </div>
                     </div>
                     <button
                         onClick={() => document.getElementById('subscribe-form')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-5 py-2 rounded-lg transition-all shadow-lg shadow-blue-500/20"
+                        className="hidden sm:block text-sm font-bold bg-white text-slate-950 px-6 py-2.5 rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10"
                     >
                         구독하기
                     </button>
@@ -106,157 +110,150 @@ export default function Home() {
             </header>
 
             {/* Hero Section */}
-            <section className="relative py-20 px-4">
-                <div className="container mx-auto max-w-4xl text-center relative z-10">
-                    <div className="inline-block mb-6 px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-full">
-                        <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">매일 아침 7시 배달</span>
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                            신호를 찾는 사람들을 위한
+            <section className="relative pt-24 pb-32 px-4 overflow-hidden">
+                <div className="container mx-auto max-w-5xl text-center relative z-10">
+                    <div className="inline-block mb-10 px-6 py-2.5 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-xl border border-blue-500/30 rounded-full shadow-2xl shadow-blue-500/10 animate-bounce-subtle">
+                        <span className="text-sm md:text-base font-black text-blue-300 uppercase tracking-widest flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                            매일 아침 7시 통찰의 배달
                         </span>
+                    </div>
+
+                    <h1 className="text-5xl md:text-8xl font-black mb-10 leading-[1.1] tracking-tight">
+                        <span className="inline-block text-white">진짜를 보는</span>
                         <br />
-                        <span className="text-white">오피니언 뉴스레터</span>
+                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent italic">
+                            단 하나의 관점
+                        </span>
                     </h1>
-                    <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-                        경제, 정치, 테크 분야 최고 전문가들의 통찰을 엄선하여<br className="hidden md:block" />
-                        매일 아침 당신의 메일함으로 배달합니다.
+
+                    <p className="text-xl md:text-2xl text-slate-400 mb-16 max-w-3xl mx-auto leading-relaxed font-medium">
+                        세상의 소음 속에서 본질을 꿰뚫는 전문가들의 시선.<br className="hidden md:block" />
+                        당신의 메일함으로 매일 아침 전해드립니다.
                     </p>
 
                     {/* Subscribe Form */}
-                    <div id="subscribe-form" className="max-w-md mx-auto">
-                        <form onSubmit={handleSubscribe} className="space-y-4">
-                            <div className="flex items-center bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl p-2 shadow-xl">
-                                <Mail className="ml-3 text-slate-400 w-5 h-5 flex-shrink-0" />
-                                <input
-                                    type="email"
-                                    placeholder="이메일 주소를 입력하세요"
-                                    className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder:text-slate-500 px-4 py-3 outline-none"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={status === 'loading' || status === 'success'}
-                                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-70 flex items-center shadow-lg shadow-blue-500/30"
-                                >
-                                    {status === 'loading' ? <Loader2 className="w-5 h-5 animate-spin" /> :
-                                        status === 'success' ? <Check className="w-5 h-5" /> :
-                                            '구독'}
-                                </button>
+                    <div id="subscribe-form" className="max-w-xl mx-auto">
+                        <form onSubmit={handleSubscribe} className="space-y-6">
+                            <div className="relative group">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                                <div className="relative flex items-center bg-slate-900 border-2 border-white/20 rounded-2xl p-2.5 shadow-2xl transition-all group-focus-within:border-white">
+                                    <Mail className="ml-4 text-white w-6 h-6 flex-shrink-0" />
+                                    <input
+                                        type="email"
+                                        placeholder="이메일 주소를 입력하세요"
+                                        className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder:text-white placeholder:font-bold placeholder:opacity-70 px-4 py-4 text-lg outline-none"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={status === 'loading' || status === 'success'}
+                                        className="bg-white text-slate-950 px-10 py-4 rounded-xl font-black text-lg transition-all duration-200 disabled:opacity-70 flex items-center hover:bg-blue-50 active:scale-95 shadow-xl"
+                                    >
+                                        {status === 'loading' ? <Loader2 className="w-6 h-6 animate-spin" /> :
+                                            status === 'success' ? <Check className="w-6 h-6" /> :
+                                                '무료 구독'}
+                                    </button>
+                                </div>
                             </div>
 
-                            <label className="flex items-start space-x-2 text-left cursor-pointer group">
-                                <input
-                                    type="checkbox"
-                                    checked={agreed}
-                                    onChange={(e) => setAgreed(e.target.checked)}
-                                    className="mt-1 w-4 h-4 rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"
-                                />
-                                <span className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                            <label className="flex items-center justify-center space-x-3 text-left cursor-pointer group py-2">
+                                <div className="relative flex items-center justify-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={agreed}
+                                        onChange={(e) => setAgreed(e.target.checked)}
+                                        className="peer appearance-none w-6 h-6 rounded-md border-2 border-white/20 bg-slate-800 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer"
+                                    />
+                                    <Check className="absolute w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+                                </div>
+                                <span className="text-sm font-bold text-slate-400 group-hover:text-white transition-colors">
                                     개인정보 수집 및 이용에 동의합니다. (필수)
                                 </span>
                             </label>
 
                             {status === 'success' && (
-                                <div className="flex items-center justify-center space-x-2 text-green-400 text-sm bg-green-500/10 border border-green-500/30 py-3 rounded-lg animate-fade-in">
-                                    <Check className="w-4 h-4" />
-                                    <span>구독해주셔서 감사합니다!</span>
+                                <div className="flex items-center justify-center space-x-3 text-green-400 font-bold text-lg bg-green-500/10 border-2 border-green-500/30 p-5 rounded-2xl animate-fade-in shadow-2xl shadow-green-500/10">
+                                    <Check className="w-6 h-6" />
+                                    <span>성공적으로 구독되었습니다! 내일부터 배달됩니다.</span>
                                 </div>
                             )}
                             {status === 'error' && (
-                                <div className="flex items-center justify-center space-x-2 text-red-400 text-sm bg-red-500/10 border border-red-500/30 py-3 rounded-lg">
-                                    <AlertCircle className="w-4 h-4" />
-                                    <span>오류가 발생했습니다. 다시 시도해주세요.</span>
+                                <div className="flex items-center justify-center space-x-3 text-red-400 font-bold text-lg bg-red-500/10 border-2 border-red-500/30 p-5 rounded-2xl shadow-2xl shadow-red-500/10">
+                                    <AlertCircle className="w-6 h-6" />
+                                    <span>구독 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</span>
                                 </div>
                             )}
                         </form>
-                        <p className="text-slate-500 text-xs mt-4">
-                            1,000+ 전문가들이 구독 중 • 무료 • 언제든 구독 해지 가능
-                        </p>
                     </div>
                 </div>
             </section>
 
-            {/* Features */}
-            <section className="py-16 px-4 border-t border-slate-800/50">
-                <div className="container mx-auto max-w-6xl">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-slate-600/50 transition-all">
-                            <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
-                                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                </svg>
-                            </div>
-                            <h3 className="text-white font-bold mb-2 text-lg">심층 시장 분석</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed">
-                                슈카월드, 매경 등 검증된 경제 전문가들의 심층 분석을 요약합니다.
-                            </p>
+            {/* Features Stats Bar */}
+            <div className="bg-white/5 border-y border-white/5 backdrop-blur-md">
+                <div className="container mx-auto max-w-6xl px-4 py-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                        <div>
+                            <div className="text-4xl font-black text-white mb-2 tracking-tighter">1,200+</div>
+                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">누적 구독자</div>
                         </div>
-                        <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-slate-600/50 transition-all">
-                            <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
-                                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-white font-bold mb-2 text-lg">글로벌 관점</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed">
-                                월스트리트 저널, 블룸버그 등 해외 주요 이슈의 핵심을 짚어드립니다.
-                            </p>
+                        <div>
+                            <div className="text-4xl font-black text-white mb-2 tracking-tighter">07:00 AM</div>
+                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">매일 배송 시간</div>
                         </div>
-                        <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-slate-600/50 transition-all">
-                            <div className="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center mb-4">
-                                <svg className="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                </svg>
-                            </div>
-                            <h3 className="text-white font-bold mb-2 text-lg">리더를 위한 큐레이션</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed">
-                                가벼운 가십은 제외하고, 의사결정에 필요한 정보만을 선별합니다.
-                            </p>
+                        <div>
+                            <div className="text-4xl font-black text-white mb-2 tracking-tighter">Top 30</div>
+                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">엄선된 전문 리포트</div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
             {/* Content Preview */}
-            <main className="py-20 px-4 relative z-10">
+            <main className="py-32 px-4 relative z-10 bg-slate-950/50">
                 <div className="container mx-auto max-w-6xl">
-                    {/* Section Header */}
-                    <div className="mb-12 text-center">
-                        <h2 className="text-3xl font-bold text-white mb-4">최신 콘텐츠</h2>
-                        <p className="text-slate-400">오늘 발행된 뉴스레터에 포함된 주요 아티클들입니다</p>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-l-4 border-blue-500 pl-8 text-left">
+                        <div>
+                            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">오늘의 뉴스레터 미리보기</h2>
+                            <p className="text-xl text-slate-400 font-medium">전문가들이 선별한 오늘의 핵심 아티클입니다.</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+                            <span className="text-lg font-black text-white uppercase tracking-tighter">Live Updates</span>
+                        </div>
                     </div>
 
                     {loadingContent ? (
-                        <div className="flex items-center justify-center py-20">
-                            <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+                        <div className="flex flex-col items-center justify-center py-40 gap-4">
+                            <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+                            <span className="font-bold text-slate-500 tracking-widest">지식을 불러오는 중...</span>
                         </div>
                     ) : (
                         <>
-                            {/* Top Contents Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                            {/* Top Contents Grid - Visual Focus */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
                                 {topContents.map((item) => (
-                                    <article key={item.id} className="group bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-2xl overflow-hidden hover:border-slate-600/50 transition-all hover:shadow-xl hover:shadow-blue-500/10">
+                                    <article key={item.id} className="group bg-slate-900/50 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10">
                                         {item.thumbnail && (
-                                            <div className="relative aspect-video overflow-hidden bg-slate-900">
+                                            <div className="relative aspect-video overflow-hidden bg-slate-800">
                                                 <img
                                                     src={item.thumbnail}
                                                     alt={item.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                 />
-                                                <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur text-blue-400 text-xs font-bold px-3 py-1 rounded-full border border-blue-500/30">
+                                                <div className="absolute top-4 left-4 bg-slate-950/90 backdrop-blur text-white text-xs font-black px-4 py-1.5 rounded-full border border-white/10 shadow-2xl">
                                                     {item.opinion_leader}
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="p-6">
-                                            <h3 className="font-bold text-lg text-white mb-3 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                                        <div className="p-8">
+                                            <h3 className="text-xl font-bold text-white mb-4 line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors">
                                                 {item.title}
                                             </h3>
                                             {item.description && (
-                                                <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 mb-4">
+                                                <p className="text-base text-slate-400 leading-relaxed line-clamp-2 mb-6 font-medium">
                                                     {item.description}
                                                 </p>
                                             )}
@@ -264,78 +261,93 @@ export default function Home() {
                                                 href={item.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center text-xs font-semibold text-blue-400 hover:text-blue-300 uppercase tracking-wider transition-colors"
+                                                className="group/btn inline-flex items-center text-sm font-black text-blue-400 hover:text-white uppercase tracking-widest transition-all"
                                             >
-                                                원문 보기 <ExternalLink className="ml-1 w-3 h-3" />
+                                                원문 리포트 읽기
+                                                <div className="ml-2 w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center group-hover/btn:bg-blue-500 group-hover/btn:text-white transition-all">
+                                                    <ExternalLink className="w-3 h-3" />
+                                                </div>
                                             </a>
                                         </div>
                                     </article>
                                 ))}
                             </div>
 
-                            {/* Category Tabs */}
-                            {remainingContents.length > 0 && (
-                                <div className="mb-8">
-                                    <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                            {/* Detailed List Section */}
+                            <div className="max-w-5xl mx-auto">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 bg-white/5 p-6 rounded-3xl border border-white/5 backdrop-blur-xl">
+                                    <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1">
                                         {categories.map(cat => (
                                             <button
                                                 key={cat}
                                                 onClick={() => setActiveTab(cat)}
-                                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === cat
-                                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
-                                                        : 'bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50'
+                                                className={`px-8 py-3 rounded-2xl text-base font-bold transition-all whitespace-nowrap shadow-xl ${activeTab === cat
+                                                        ? 'bg-white text-slate-950 shadow-white/20 scale-105'
+                                                        : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
                                                     }`}
                                             >
                                                 {cat}
                                             </button>
                                         ))}
                                     </div>
+                                    <div className="text-sm font-bold text-slate-500 italic">
+                                        오늘의 전체 리포트: {filteredRemaining.length}건
+                                    </div>
                                 </div>
-                            )}
 
-                            {/* Remaining Contents List */}
-                            <div className="space-y-4">
-                                {filteredRemaining.map((item) => (
-                                    <article key={item.id} className="group bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-6 hover:border-slate-600/50 transition-all hover:shadow-lg hover:shadow-blue-500/5">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1">
-                                                <div className="flex items-center space-x-2 mb-2">
-                                                    <span className="text-xs font-semibold text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/30">
-                                                        {item.opinion_leader}
-                                                    </span>
-                                                    <span className="text-xs text-slate-500">
-                                                        {new Date(item.scraped_at).toLocaleDateString('ko-KR')}
-                                                    </span>
-                                                </div>
-                                                <h3 className="font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
-                                                    {item.title}
-                                                </h3>
-                                                {item.description && (
-                                                    <p className="text-slate-400 text-sm line-clamp-2 mb-3">
-                                                        {item.description}
-                                                    </p>
+                                <div className="space-y-6">
+                                    {filteredRemaining.map((item) => (
+                                        <article key={item.id} className="group bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 hover:border-white/10 transition-all duration-300 hover:bg-slate-900/80">
+                                            <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+                                                {item.thumbnail && (
+                                                    <div className="w-full md:w-[320px] aspect-video flex-shrink-0 rounded-2xl overflow-hidden bg-slate-800 shadow-2xl relative">
+                                                        <img
+                                                            src={item.thumbnail}
+                                                            alt={item.title}
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent"></div>
+                                                    </div>
                                                 )}
-                                                <a
-                                                    href={item.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center text-xs font-semibold text-blue-400 hover:text-blue-300 uppercase tracking-wider transition-colors"
-                                                >
-                                                    원문 보기 <ExternalLink className="ml-1 w-3 h-3" />
-                                                </a>
-                                            </div>
-                                            {item.thumbnail && (
-                                                <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-slate-900">
-                                                    <img
-                                                        src={item.thumbnail}
-                                                        alt={item.title}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                    />
+                                                <div className="flex-1 text-left">
+                                                    <div className="flex items-center flex-wrap gap-4 mb-5">
+                                                        <span className="text-sm font-black text-blue-400 bg-blue-500/10 px-4 py-1.5 rounded-full border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                                                            {item.opinion_leader}
+                                                        </span>
+                                                        <span className="text-base font-black text-white opacity-90 flex items-center gap-2">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                                                            {new Date(item.scraped_at).toLocaleDateString('ko-KR', {
+                                                                year: 'numeric',
+                                                                month: 'long',
+                                                                day: 'numeric',
+                                                                weekday: 'long'
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="text-2xl md:text-3xl font-black text-white mb-5 group-hover:text-blue-400 transition-colors leading-tight tracking-tighter">
+                                                        {item.title}
+                                                    </h3>
+                                                    {item.description && (
+                                                        <p className="text-lg text-slate-400 font-medium mb-6 line-clamp-3 leading-relaxed opacity-85">
+                                                            {item.description}
+                                                        </p>
+                                                    )}
+                                                    <a
+                                                        href={item.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="group/link inline-flex items-center text-base font-black text-blue-400 hover:text-white uppercase tracking-widest transition-all"
+                                                    >
+                                                        상세 리포트 보기
+                                                        <div className="ml-3 p-1.5 rounded-full border border-blue-500/30 group-hover/link:border-white transition-colors">
+                                                            <ExternalLink className="w-4 h-4" />
+                                                        </div>
+                                                    </a>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </article>
-                                ))}
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
                             </div>
                         </>
                     )}
@@ -343,16 +355,46 @@ export default function Home() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-slate-900/50 backdrop-blur-xl border-t border-slate-800/50 text-slate-500 py-12 text-sm text-center relative z-10">
-                <div className="container mx-auto px-4">
-                    <p className="mb-4 text-slate-400">© 2026 오뉴. All rights reserved.</p>
-                    <div className="flex justify-center gap-6">
-                        <a href="#" className="hover:text-blue-400 transition-colors">이용약관</a>
-                        <a href="#" className="hover:text-blue-400 transition-colors">개인정보처리방침</a>
-                        <a href="#" className="hover:text-blue-400 transition-colors">문의하기</a>
+            <footer className="bg-slate-900 border-t border-white/5 text-slate-500 py-24 text-base relative z-10 overflow-hidden">
+                <div className="container mx-auto px-4 text-center">
+                    <div className="mb-10 flex justify-center">
+                        <span className="text-4xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">오뉴</span>
                     </div>
+                    <p className="mb-10 text-lg font-bold text-slate-400 tracking-tight italic">전달하는 것은 정보가 아니라, 세상을 보는 새로운 시선입니다.</p>
+                    <div className="flex flex-wrap justify-center gap-10 mb-10">
+                        <a href="#" className="font-bold hover:text-white transition-colors">이용약관</a>
+                        <a href="#" className="font-bold hover:text-white transition-colors">개인정보처리방침</a>
+                        <a href="#" className="font-bold hover:text-white transition-colors">문의하기</a>
+                    </div>
+                    <p className="text-sm border-t border-white/5 pt-10">© 2026 오뉴 - 오피니언 뉴스레터. All rights reserved.</p>
                 </div>
             </footer>
+
+            <style jsx global>{`
+                @keyframes gradient {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+                .animate-gradient {
+                    background-size: 200% 200%;
+                    animation: gradient 8s ease infinite;
+                }
+                .animate-bounce-subtle {
+                    animation: bounce-subtle 3s ease-in-out infinite;
+                }
+                @keyframes bounce-subtle {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-5px); }
+                }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </div>
     );
 }
