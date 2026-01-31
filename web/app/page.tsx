@@ -72,8 +72,8 @@ export default function Home() {
         }
     };
 
-    const topContents = contents.slice(0, 6);
-    const remainingContents = contents.slice(6);
+    const topContents = contents.slice(0, 3);
+    const remainingContents = contents.slice(3);
 
     const filteredRemaining = activeTab === 'All'
         ? remainingContents

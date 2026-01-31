@@ -59,12 +59,13 @@ export async function POST(request: Request) {
         // Simple HTML Template
         const htmlContent = `
             <div style="font-family: serif; max-width: 600px; margin: 0 auto; color: #1a202c;">
-                <div style="text-align: center; padding: 20px; border-bottom: 1px solid #e2e8f0;">
-                    <h1 style="margin:0; font-size: 24px;">ONEW</h1>
-                    <p style="font-size: 12px; color: #718096;">${currDate}</p>
+                <div style="text-align: center; padding: 20px; border-bottom: 2px solid #3b82f6;">
+                    <h1 style="margin:0; font-size: 28px; color: #1e293b; font-weight: 900;">오뉴</h1>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b; font-weight: 700; letter-spacing: 0.1em;">오늘의 오피니언 뉴스</p>
+                    <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">${currDate}</p>
                 </div>
                 <div style="padding: 20px;">
-                    <h2>Most Read Today</h2>
+                    <h2 style="font-size: 18px; border-left: 4px solid #3b82f6; padding-left: 12px; margin-bottom: 20px; color: #0f172a;">오늘의 주요 리포트</h2>
                     ${contents.length > 0 ? contents.map((c: any) => `
                         <div style="margin-bottom: 20px;">
                             <h3 style="margin: 0 0 5px 0;">${c.title}</h3>
@@ -86,11 +87,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, count: recipients.length, simulated: true });
         }
 
+        const subjectDate = `${new Date().getMonth() + 1}/${new Date().getDate()}`;
         const promises = recipients.map(to => {
             return transporter.sendMail({
-                from: `"ONEW Newsletter" <${process.env.GMAIL_USER}>`,
+                from: `"오뉴 뉴스레터" <${process.env.GMAIL_USER}>`,
                 to,
-                subject: `ONEW Daily Briefing - ${currDate}`,
+                subject: `오뉴 - 오늘의 오피니언 뉴스 [${subjectDate}]`,
                 html: htmlContent,
             });
         });

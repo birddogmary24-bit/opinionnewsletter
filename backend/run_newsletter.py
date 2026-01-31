@@ -43,21 +43,31 @@ def run_newsletter_job():
     print("🚀 Starting Newsletter Delivery Job...")
     db = get_db()
     
-    # 1. Fetch Latest Content (Top 5-6 + Others)
-    print("Fetching today's content...")
-    docs = db.collection('contents').order_by('scraped_at', direction='DESCENDING').limit(50).stream()
+    # 1. Fetch Latest Content (Within 24 hours)
+    print("Fetching today's content (last 24h)...")
+    yesterday = datetime.datetime.now() - datetime.timedelta(hours=24)
+    
+    docs = db.collection('contents')\
+        .where('scraped_at', '>=', yesterday)\
+        .stream()
+    
     all_contents = []
     for doc in docs:
         all_contents.append(doc.to_dict())
     
     if not all_contents:
-        print("⚠️ No content found. Aborting.")
+        print("⚠️ No content found in last 24h. Aborting.")
         return
 
+    # Sort by view_count DESC (Handle None values by using 0)
+    all_contents.sort(key=lambda x: x.get('view_count') or 0, reverse=True)
+    
+    # Limit to 30 items
+    all_contents = all_contents[:30]
+    
     # Logic: Top 3 mixed, rest grouped by opinion_leader
-    top_limit = 3
-    top_stories = all_contents[:top_limit]
-    remaining_stories = all_contents[top_limit:]
+    top_stories = all_contents[:3]
+    remaining_stories = all_contents[3:]
     
     category_stories = {}
     for story in remaining_stories:
