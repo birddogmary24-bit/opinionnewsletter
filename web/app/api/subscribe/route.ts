@@ -1,19 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '../../../lib/firebase';
-import crypto from 'crypto';
-
-// Simple AES encryption for demo
-// In prod, manage keys with KMS or env vars
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '12345678901234567890123456789012'; // Must be 32 chars
-const IV_LENGTH = 16;
-
-function encryptEmail(text: string) {
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
-    let encrypted = cipher.update(text);
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return iv.toString('hex') + ':' + encrypted.toString('hex');
-}
+import { encryptEmail } from '../../../lib/crypto';
 
 export async function POST(request: Request) {
     try {

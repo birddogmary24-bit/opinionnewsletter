@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { db } from '@/lib/firebase';
+import { decryptEmail, maskEmail } from '@/lib/crypto';
 
 export async function GET() {
     try {
@@ -13,12 +14,20 @@ export async function GET() {
 
         // Fetch subscribers from Firestore
         const snapshot = await db.collection('subscribers').orderBy('created_at', 'desc').get();
-        const subscribers = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            // Ensure dates are serializable
-            created_at: doc.data().created_at?.toDate ? doc.data().created_at.toDate().toISOString() : null,
-        }));
+        const subscribers = snapshot.docs.map(doc => {
+            const data = doc.data();
+            // Decrypt real email
+            const realEmail = decryptEmail(data.email);
+            // Mask for frontend
+            const masked = maskEmail(realEmail || 'error');
+
+            return {
+                id: doc.id,
+                ...data,
+                email: masked, // Send ONLY masked email
+                created_at: data.created_at?.toDate ? data.created_at.toDate().toISOString() : null,
+            };
+        });
 
         return NextResponse.json({ subscribers });
     } catch (error) {

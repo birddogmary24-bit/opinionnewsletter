@@ -14,6 +14,7 @@ interface Subscriber {
 export default function AdminDashboard() {
     const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
     const [loading, setLoading] = useState(true);
+    const [sending, setSending] = useState(false);
     const [stats, setStats] = useState({ total: 0, active: 0 });
     const router = useRouter();
 
@@ -33,7 +34,7 @@ export default function AdminDashboard() {
                 setSubscribers(data.subscribers);
                 setStats({
                     total: data.subscribers.length,
-                    active: data.subscribers.length // MVP Assumption
+                    active: data.subscribers.filter((s: any) => s.status === 'active').length
                 });
             }
         } catch (error) {
@@ -43,11 +44,30 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleSend = async (type: 'all' | 'individual', subscriberId?: string) => {
+        if (!confirm(type === 'all' ? 'Send newsletter to ALL subscribers?' : 'Send newsletter to this subscriber?')) return;
+
+        setSending(true);
+        try {
+            const res = await fetch('/api/admin/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, subscriberId }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Successfully sent! (${data.count} recipients${data.simulated ? ' - SIMULATED' : ''})`);
+            } else {
+                alert('Failed to send: ' + data.message);
+            }
+        } catch (e) {
+            alert('Error sending email');
+        } finally {
+            setSending(false);
+        }
+    };
+
     const handleLogout = async () => {
-        // Simple client-side clear, server cookie will expire or can be cleared via API if strictly needed
-        // For MVP, just redirecting to login is enough if we rely on cookie overwrites, 
-        // but let's just go to login which clears state effectively for the user view.
-        // Ideally we hit a logout endpoint.
         document.cookie = 'admin_session=; Max-Age=0; path=/;';
         router.push('/admin');
     };
@@ -55,11 +75,8 @@ export default function AdminDashboard() {
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
     };
 
@@ -79,8 +96,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center">
                         <span className="text-xl font-serif font-bold text-navy-900 mr-8">ONEW Admin</span>
                         <nav className="hidden md:flex space-x-4">
-                            <a href="#" className="text-navy-900 font-medium px-3 py-2 rounded-md bg-navy-50">Dashboard</a>
-                            <a href="#" className="text-navy-500 hover:text-navy-900 px-3 py-2 rounded-md transition-colors">Settings</a>
+                            <span className="text-navy-900 font-medium px-3 py-2 rounded-md bg-navy-50">Dashboard</span>
                         </nav>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -103,15 +119,19 @@ export default function AdminDashboard() {
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-navy-100">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-navy-500 text-sm font-medium uppercase tracking-wider">Latest Run Status</h3>
+                            <h3 className="text-navy-500 text-sm font-medium uppercase tracking-wider">Active Status</h3>
                             <CheckCircle className="w-5 h-5 text-green-500" />
                         </div>
-                        <p className="text-3xl font-bold text-navy-900">Success</p>
-                        <p className="text-xs text-navy-400 mt-1">Last run: Today 07:00 AM</p>
+                        <p className="text-3xl font-bold text-navy-900">{stats.active} Active</p>
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-navy-100 flex flex-col justify-center items-start">
-                        <button className="w-full bg-navy-900 hover:bg-navy-800 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center shadow-lg shadow-navy-900/20">
-                            <Mail className="w-4 h-4 mr-2" /> Trigger Newsletter
+                        <button
+                            onClick={() => handleSend('all')}
+                            disabled={sending}
+                            className="w-full bg-navy-900 hover:bg-navy-800 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center shadow-lg shadow-navy-900/20 disabled:opacity-70"
+                        >
+                            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+                            Send to ALL ({stats.active})
                         </button>
                     </div>
                 </div>
@@ -119,7 +139,7 @@ export default function AdminDashboard() {
                 {/* Subscribers Table */}
                 <div className="bg-white rounded-xl shadow-sm border border-navy-100 overflow-hidden">
                     <div className="px-6 py-4 border-b border-navy-100 flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-navy-900">Recent Subscribers</h2>
+                        <h2 className="text-lg font-bold text-navy-900">Subscriber Management</h2>
                         <button onClick={fetchSubscribers} className="text-navy-400 hover:text-navy-900 transition-colors p-2 rounded-full hover:bg-navy-50">
                             <RefreshCw className="w-4 h-4" />
                         </button>
@@ -128,7 +148,7 @@ export default function AdminDashboard() {
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-navy-50 text-navy-600 text-xs uppercase tracking-wider">
-                                    <th className="px-6 py-3 font-semibold">Email</th>
+                                    <th className="px-6 py-3 font-semibold">Email (Masked)</th>
                                     <th className="px-6 py-3 font-semibold">Joined Date</th>
                                     <th className="px-6 py-3 font-semibold">Status</th>
                                     <th className="px-6 py-3 font-semibold text-right">Actions</th>
@@ -144,19 +164,26 @@ export default function AdminDashboard() {
                                 ) : (
                                     subscribers.map((sub) => (
                                         <tr key={sub.id} className="hover:bg-navy-50/50 transition-colors">
-                                            <td className="px-6 py-4 text-sm font-medium text-navy-900">
+                                            <td className="px-6 py-4 text-sm font-medium text-navy-900 font-mono">
                                                 {sub.email}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-navy-500">
                                                 {formatDate(sub.created_at)}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Active
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${sub.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                    {sub.status}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button className="text-navy-400 hover:text-red-600 text-xs font-medium transition-colors">
+                                            <td className="px-6 py-4 text-right space-x-2">
+                                                <button
+                                                    onClick={() => handleSend('individual', sub.id)}
+                                                    disabled={sending}
+                                                    className="text-navy-600 hover:text-navy-900 text-xs font-medium transition-colors border border-navy-200 px-3 py-1 rounded hover:bg-white"
+                                                >
+                                                    Send Email
+                                                </button>
+                                                <button className="text-navy-400 hover:text-red-600 text-xs font-medium transition-colors px-2">
                                                     Remove
                                                 </button>
                                             </td>
