@@ -1,24 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, ArrowRight, Loader2, CheckCircle, TrendingUp, BookOpen, Globe } from 'lucide-react';
+import { Mail, Check, AlertCircle, Loader2, ArrowRight, Play } from 'lucide-react';
+import Image from 'next/image';
 
 interface Content {
     id: string;
     title: string;
-    thumbnail: string;
-    opinion_leader: string;
-    description: string;
     url: string;
+    thumbnail?: string;
+    description?: string;
+    scraped_at: string;
+    opinion_leader: string;
 }
 
 export default function Home() {
     const [email, setEmail] = useState('');
+    const [agreed, setAgreed] = useState(false);
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [contents, setContents] = useState<Content[]>([]);
     const [loadingContent, setLoadingContent] = useState(true);
+    const [activeTab, setActiveTab] = useState('All');
 
-    // Fetch contents on load
+    // Categories (Mapped from opinion_leader for now)
+    // In a real app, this would come from the DB or config
+    const categories = ['All', '슈카월드', '매경 월가월부'];
+
     useEffect(() => {
         async function fetchContents() {
             try {
@@ -38,6 +45,15 @@ export default function Home() {
 
     const handleSubscribe = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!email || !email.includes('@')) {
+            alert('올바른 이메일 주소를 입력해주세요.');
+            return;
+        }
+        if (!agreed) {
+            alert('개인정보 수집 및 이용에 동의해주세요.');
+            return;
+        }
+
         setStatus('loading');
         try {
             const res = await fetch('/api/subscribe', {
@@ -56,172 +72,220 @@ export default function Home() {
         }
     };
 
+    // Logic: Top 6 are highlights. Rest are filtered list.
+    const topContents = contents.slice(0, 6);
+    const remainingContents = contents.slice(6);
+
+    const filteredRemaining = activeTab === 'All'
+        ? remainingContents
+        : remainingContents.filter(c => c.opinion_leader.includes(activeTab));
+
     return (
-        <main className="min-h-screen bg-navy-50 text-navy-900 font-sans selection:bg-navy-200">
-            {/* Header */}
-            <header className="border-b border-navy-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-serif font-bold tracking-tight text-navy-900">ONEW</span>
-                        <span className="hidden sm:inline-block text-xs uppercase tracking-widest text-navy-500 mt-1 ml-2">Opinion Newsletter</span>
+        <div className="min-h-screen bg-gray-50 text-slate-900 font-sans">
+            {/* 1. Simplified Header */}
+            <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+                <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+                    <div className="font-serif text-2xl font-bold text-navy-900 tracking-tight">
+                        ONEW
                     </div>
-                    <nav className="hidden md:flex space-x-6 text-sm font-medium text-navy-600">
-                        <a href="#features" className="hover:text-navy-900 transition-colors">Features</a>
-                        <a href="#preview" className="hover:text-navy-900 transition-colors">Preview</a>
-                        <a href="#subscribe" className="text-gold-500 hover:text-gold-400 font-semibold transition-colors">Subscribe</a>
-                    </nav>
+                    <button
+                        onClick={() => document.getElementById('subscribe-form')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="text-sm font-medium bg-navy-900 text-white px-4 py-2 rounded hover:bg-navy-800 transition-colors"
+                    >
+                        구독하기
+                    </button>
                 </div>
             </header>
 
-            {/* Hero Section */}
-            <section className="relative overflow-hidden pt-20 pb-32 bg-navy-900 text-white text-center">
-                {/* Abstract Background patterns */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                    <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500 rounded-full blur-[120px]" />
-                    <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500 rounded-full blur-[120px]" />
-                </div>
-
-                <div className="relative max-w-4xl mx-auto px-4 z-10">
-                    <span className="inline-block py-1 px-3 rounded-full bg-navy-800 border border-navy-700 text-navy-200 text-xs font-semibold tracking-wider mb-6">
-                        DAILY INSIGHTS FOR LEADERS
-                    </span>
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold leading-tight mb-6 tracking-tight">
-                        The Signal in the Noise.
+            {/* 2. Compact Hero & Subscription */}
+            <section className="bg-white border-b border-slate-200 py-12 md:py-16">
+                <div className="container mx-auto px-4 text-center max-w-2xl">
+                    <h1 className="font-serif text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                        세상의 소음을 걸러낸<br />오피니언 뉴스레터
                     </h1>
-                    <p className="text-lg md:text-xl text-navy-200 mb-10 max-w-2xl mx-auto leading-relaxed">
-                        매일 아침 7시. 경제, 정치, 테크 분야 최고 전문가들의 통찰을 <br className="hidden md:block" />
-                        엄선하여 당신의 메일함으로 배달합니다.
+                    <p className="text-slate-600 mb-8 leading-relaxed">
+                        경제, 기술, 정치 분야의 최고 전문가들이 전하는<br className="hidden md:block" />
+                        깊이 있는 통찰을 매일 아침 메일함으로 보내드립니다.
                     </p>
 
-                    <form onSubmit={handleSubscribe} className="max-w-md mx-auto relative mb-4">
-                        <div className="flex items-center bg-white rounded-full p-2 shadow-2xl shadow-navy-900/50">
-                            <Mail className="ml-3 text-navy-400 w-5 h-5 flex-shrink-0" />
-                            <input
-                                type="email"
-                                placeholder="Enter your email address"
-                                className="flex-1 bg-transparent border-none focus:ring-0 text-navy-900 placeholder:text-navy-400 px-4 py-2 outline-none"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                            <button
-                                type="submit"
-                                disabled={status === 'loading' || status === 'success'}
-                                className="bg-navy-800 hover:bg-navy-700 text-white px-6 py-3 rounded-full font-medium transition-all duration-200 disabled:opacity-70 flex items-center"
-                            >
-                                {status === 'loading' ? <Loader2 className="w-5 h-5 animate-spin" /> :
-                                    status === 'success' ? <CheckCircle className="w-5 h-5" /> :
-                                        'Subscribe'}
-                            </button>
-                        </div>
-                    </form>
-                    {status === 'success' && <p className="text-green-400 text-sm mt-3 animate-fade-in">구독해주셔서 감사합니다. 곧 찾아뵙겠습니다.</p>}
-                    <p className="text-navy-400 text-xs mt-4">
-                        Join 1,000+ professionals. Free forever. Unsubscribe anytime.
-                    </p>
-                </div>
-            </section>
-
-            {/* Trust & Features Bar */}
-            <div className="border-b border-navy-200 bg-white">
-                <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-                    <div className="flex flex-col items-center md:items-start p-4 hover:bg-navy-50 rounded-xl transition-colors">
-                        <div className="w-10 h-10 rounded-lg bg-navy-100 flex items-center justify-center text-navy-700 mb-4">
-                            <TrendingUp className="w-5 h-5" />
-                        </div>
-                        <h3 className="text-navy-900 font-bold mb-2">Deep Markets Analysis</h3>
-                        <p className="text-navy-500 text-sm leading-relaxed">슈카월드, 매경 등 검증된 경제 전문가들의 심층 분석을 요약합니다.</p>
-                    </div>
-                    <div className="flex flex-col items-center md:items-start p-4 hover:bg-navy-50 rounded-xl transition-colors">
-                        <div className="w-10 h-10 rounded-lg bg-navy-100 flex items-center justify-center text-navy-700 mb-4">
-                            <Globe className="w-5 h-5" />
-                        </div>
-                        <h3 className="text-navy-900 font-bold mb-2">Global Perspective</h3>
-                        <p className="text-navy-500 text-sm leading-relaxed">월스트리트 저널, 블룸버그 등 해외 주요 이슈의 핵심을 짚어드립니다.</p>
-                    </div>
-                    <div className="flex flex-col items-center md:items-start p-4 hover:bg-navy-50 rounded-xl transition-colors">
-                        <div className="w-10 h-10 rounded-lg bg-navy-100 flex items-center justify-center text-navy-700 mb-4">
-                            <BookOpen className="w-5 h-5" />
-                        </div>
-                        <h3 className="text-navy-900 font-bold mb-2">Curated for Leaders</h3>
-                        <p className="text-navy-500 text-sm leading-relaxed">가벼운 가십은 제외하고, 의사결정에 필요한 정보만을 선별합니다.</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Review Section (Live Data) */}
-            <section id="preview" className="py-24 bg-navy-50">
-                <div className="max-w-6xl mx-auto px-4">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-                        <div>
-                            <h2 className="text-3xl font-serif font-bold text-navy-900 mb-4">Today's Edition Preview</h2>
-                            <p className="text-navy-500 max-w-xl">
-                                오늘 아침 발행된 뉴스레터에 포함된 주요 아티클들입니다.
-                            </p>
-                        </div>
-                        <a href="#" className="hidden md:flex items-center text-navy-700 font-semibold hover:text-navy-900">
-                            View All Archive <ArrowRight className="ml-2 w-4 h-4" />
-                        </a>
-                    </div>
-
-                    {loadingContent ? (
-                        <div className="h-96 flex items-center justify-center">
-                            <Loader2 className="w-8 h-8 text-navy-300 animate-spin" />
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {contents.map((item) => (
-                                <article key={item.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-navy-100 flex flex-col h-full">
-                                    <div className="relative aspect-video overflow-hidden bg-navy-100">
-                                        <img
-                                            src={item.thumbnail}
-                                            alt={item.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    <div id="subscribe-form" className="bg-slate-50 p-6 rounded-lg border border-slate-200 shadow-sm">
+                        {status === 'success' ? (
+                            <div className="text-green-600 flex flex-col items-center py-4">
+                                <Check className="w-12 h-12 mb-2" />
+                                <p className="font-bold">구독이 완료되었습니다.</p>
+                                <p className="text-sm text-slate-500">내일 아침 뉴스레터에서 뵙겠습니다.</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubscribe} className="space-y-4">
+                                <div className="flex flex-col md:flex-row gap-3">
+                                    <div className="relative flex-grow">
+                                        <Mail className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="이메일 주소를 입력하세요"
+                                            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded focus:ring-2 focus:ring-navy-900 focus:border-navy-900 outline-none text-slate-900 placeholder-slate-400 bg-white"
+                                            disabled={status === 'loading'}
                                         />
-                                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-navy-900 text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wide">
-                                            {item.opinion_leader}
-                                        </div>
                                     </div>
-                                    <div className="p-6 flex flex-col flex-1">
-                                        <h3 className="font-bold text-lg text-navy-900 mb-3 line-clamp-2 group-hover:text-blue-700 transition-colors">
-                                            {item.title}
-                                        </h3>
-                                        <p className="text-navy-500 text-sm leading-relaxed line-clamp-3 mb-4 flex-1">
-                                            {item.description}
-                                        </p>
-                                        <div className="pt-4 mt-auto border-t border-navy-50">
-                                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-navy-400 hover:text-navy-700 uppercase tracking-wider flex items-center">
-                                                Read Original <ArrowRight className="ml-1 w-3 h-3" />
-                                            </a>
-                                        </div>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    )}
+                                    <button
+                                        type="submit"
+                                        disabled={status === 'loading'}
+                                        className="bg-navy-900 hover:bg-navy-800 text-white px-6 py-3 rounded font-bold transition-all flex items-center justify-center whitespace-nowrap"
+                                    >
+                                        {status === 'loading' ? <Loader2 className="animate-spin w-5 h-5" /> : '무료 구독하기'}
+                                    </button>
+                                </div>
 
-                    <div className="mt-12 text-center md:hidden">
-                        <a href="#" className="inline-flex items-center text-navy-700 font-semibold hover:text-navy-900">
-                            View All Archive <ArrowRight className="ml-2 w-4 h-4" />
-                        </a>
+                                {/* Privacy Consent */}
+                                <div className="flex items-start justify-center gap-2 text-left">
+                                    <input
+                                        type="checkbox"
+                                        id="privacy-check"
+                                        checked={agreed}
+                                        onChange={(e) => setAgreed(e.target.checked)}
+                                        className="mt-1"
+                                    />
+                                    <label htmlFor="privacy-check" className="text-xs text-slate-500 max-w-sm cursor-pointer select-none">
+                                        개인정보(이메일) 수집 및 이용에 동의합니다. 수집된 정보는 뉴스레터 발송 외의 목적으로 사용되지 않으며, 언제든 구독을 취소할 수 있습니다.
+                                    </label>
+                                </div>
+                                {status === 'error' && (
+                                    <p className="text-red-500 text-sm flex items-center justify-center gap-1">
+                                        <AlertCircle className="w-4 h-4" /> 오류가 발생했습니다. 다시 시도해주세요.
+                                    </p>
+                                )}
+                            </form>
+                        )}
                     </div>
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="bg-white border-t border-navy-200 py-12">
-                <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
-                    <div className="mb-4 md:mb-0">
-                        <span className="text-xl font-serif font-bold text-navy-900">ONEW</span>
-                        <p className="text-navy-400 text-sm mt-2">© 2026 Opinion Newsletter. All rights reserved.</p>
+            {/* 3. Main Content Area */}
+            <main className="container mx-auto px-4 py-12">
+                {loadingContent ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
                     </div>
-                    <div className="flex space-x-6 text-sm text-navy-500">
-                        <a href="#" className="hover:text-navy-900">Privacy Policy</a>
-                        <a href="#" className="hover:text-navy-900">Terms of Service</a>
-                        <a href="#" className="hover:text-navy-900">Contact Support</a>
+                ) : (
+                    <>
+                        {/* Top Focus Section */}
+                        <div className="mb-16">
+                            <div className="flex items-center justify-between mb-6 border-b border-black pb-4">
+                                <h2 className="text-xl font-bold font-serif text-slate-900">Today's Focus</h2>
+                                <span className="text-xs text-slate-500 font-mono">{new Date().toLocaleDateString('ko-KR')}</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
+                                {topContents.map((content, idx) => (
+                                    <a
+                                        key={content.id}
+                                        href={content.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="group block"
+                                    >
+                                        <div className="relative aspect-video bg-slate-200 overflow-hidden mb-3">
+                                            {content.thumbnail ? (
+                                                <Image
+                                                    src={content.thumbnail}
+                                                    alt={content.title}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-slate-400">No Image</div>
+                                            )}
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                <Play className="text-white opacity-0 group-hover:opacity-100 w-12 h-12 drop-shadow-lg transition-opacity" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-xs font-bold text-navy-600 uppercase tracking-wider">
+                                                {content.opinion_leader}
+                                            </span>
+                                            <h3 className="text-lg font-bold leading-snug group-hover:text-navy-900 transition-colors line-clamp-2">
+                                                {content.title}
+                                            </h3>
+                                            {/* Descriptions Removed as per user request */}
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* More News Section */}
+                        <div>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 border-b border-slate-200 pb-2">
+                                <h2 className="text-lg font-bold text-slate-900 mb-4 md:mb-0">More Insights</h2>
+
+                                {/* Filters */}
+                                <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setActiveTab(cat)}
+                                            className={`px-3 py-1 text-sm rounded-full whitespace-nowrap transition-colors ${activeTab === cat
+                                                    ? 'bg-slate-900 text-white font-medium'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                {filteredRemaining.map((content) => (
+                                    <a
+                                        key={content.id}
+                                        href={content.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex gap-4 group hover:bg-white p-2 rounded transition-colors"
+                                    >
+                                        <div className="relative w-32 h-20 flex-shrink-0 bg-slate-200 overflow-hidden rounded-sm">
+                                            {content.thumbnail && (
+                                                <Image
+                                                    src={content.thumbnail}
+                                                    alt={content.title}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col justify-center">
+                                            <span className="text-xs text-slate-500 mb-1">{content.opinion_leader}</span>
+                                            <h4 className="text-sm font-medium leading-snug group-hover:text-navy-900 line-clamp-2">
+                                                {content.title}
+                                            </h4>
+                                        </div>
+                                    </a>
+                                ))}
+                                {filteredRemaining.length === 0 && (
+                                    <div className="col-span-full text-center py-10 text-slate-500 text-sm">
+                                        해당 카테고리의 콘텐츠가 아직 없습니다.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                )}
+            </main>
+
+            {/* Simple Footer */}
+            <footer className="bg-slate-900 text-slate-400 py-12 text-sm text-center">
+                <div className="container mx-auto px-4">
+                    <p className="mb-4">&copy; 2026 ONEW. All rights reserved.</p>
+                    <div className="flex justify-center gap-6">
+                        <a href="#" className="hover:text-white">이용약관</a>
+                        <a href="#" className="hover:text-white">개인정보처리방침</a>
+                        <a href="#" className="hover:text-white">문의하기</a>
                     </div>
                 </div>
             </footer>
-        </main>
+        </div>
     );
 }

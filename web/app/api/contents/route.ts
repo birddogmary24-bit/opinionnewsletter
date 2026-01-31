@@ -5,7 +5,7 @@ export async function GET() {
     try {
         const snapshot = await db.collection('contents')
             .orderBy('scraped_at', 'desc')
-            .limit(6)
+            .limit(50)
             .get();
 
         const contents = snapshot.docs.map(doc => ({

@@ -61,7 +61,24 @@
 
 ## 4. Technical Architecture
 **Cloud Provider:** Google Cloud Platform (GCP)
-- **Frontend (Web):** Next.js (React) + Tailwind CSS.
+-### 3. Frontend (Web)
+- **Framework**: Next.js (App Router).
+- **Styling**: Tailwind CSS.
+- **Design Concept**:
+    - Reference: [JoongAng Newsletter](https://www.joongang.co.kr/newsletter).
+    - Style: Clean, grid-based, content-focused news portal.
+    - Color Palette: Navy (Trust) & White/Gray (Clean), avoiding excessive whitespace.
+- **Key Sections**:
+    1.  **Header**: Simplified. Logo (Left) + Subscribe Button (Right). Remove dead links.
+    2.  **Hero/Subscription**:
+        - Reduced vertical whitespace.
+        - **Scanning**: High-contrast Subscription Form (Input + Button).
+        - **Compliance**: "Personal Information Collection & Usage Agreement" checkbox (Required).
+    3.  **Content Area**:
+        - **Top Focus**: Top 5-6 latest/important videos. (Thumbnail + Title + Source only). No descriptions.
+        - **Archive/Explore**: Remaining articles (~30+) filtered by Category/Source.
+- **Localization**: All UI text must be in **Korean**.
+- **SEO**: Basic meta tags for "ONEW".
 - **Backend (API/Crawler):** Python (FastAPI or purely Cloud Functions) or Node.js.
 - **Database:** Google Firestore (NoSQL) for content and subscribers.
 - **Scheduling:** Cloud Scheduler (for 7 AM trigger).
