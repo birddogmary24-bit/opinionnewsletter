@@ -77,8 +77,15 @@
                                         item.opinion_leader }}</span>
                                     <!-- Reduced title font size significantly -->
                                     <h2
-                                        style="margin: 0; font-size: 17px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
+                                        style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
                                         {{ item.title }}</h2>
+                                    <div style="margin-top: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
+                                        {% if item.view_count %}
+                                        조회수 {{ "{:,}".format(item.view_count) }}
+                                        {% else %}
+                                        조회수 없음
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </a>
                         </td>
@@ -114,6 +121,20 @@
                                     <a href="{{ item.url }}" style="text-decoration: none; display: block;">
                                         <img src="{{ item.thumbnail }}" alt="{{ item.title }}" width="280"
                                             style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #1e293b; display: block;" />
+                                        <div style="padding-top: 10px;">
+                                            <h3
+                                                style="margin: 0; font-size: 14px; font-weight: 400; color: #cbd5e1; line-height: 1.4; text-decoration: none; display: block;">
+                                                {{ item.title }}
+                                            </h3>
+                                            <div
+                                                style="margin-top: 4px; font-size: 11px; color: #64748b; font-weight: 400;">
+                                                {% if item.view_count %}
+                                                조회수 {{ "{:,}".format(item.view_count) }}
+                                                {% else %}
+                                                조회수 없음
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </a>
                                 </div>
                                 {% endfor %}

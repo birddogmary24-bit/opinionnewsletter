@@ -82,7 +82,8 @@ class YouTubeCrawler:
                                 'thumbnail': thumbnail_url,
                                 'description': description,
                                 'published_at': datetime.datetime.now().isoformat(),
-                                'original_id': video_id
+                                'original_id': video_id,
+                                'view_count': video_info.get('view_count')
                             }
                             videos.append(video_data)
                             count += 1
