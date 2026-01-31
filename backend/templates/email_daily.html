@@ -1,292 +1,144 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ date_str }} Newsletter</title>
-    <style>
-        body {
-            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: #0f172a;
-            margin: 0;
-            padding: 0;
-            color: #e2e8f0;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #1e293b;
-        }
-
-        .header {
-            background-color: #0f172a;
-            color: #ffffff;
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 1px solid #334155;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-family: 'Dotum', '돋움', sans-serif;
-            font-size: 28px;
-            letter-spacing: 1px;
-            color: #ef4444;
-            font-weight: bold;
-        }
-
-        .header p {
-            margin: 10px 0 0;
-            font-size: 14px;
-            color: #94a3b8;
-            letter-spacing: 1px;
-        }
-
-        .content {
-            padding: 30px 20px;
-            background-color: #1e293b;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: bold;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            color: #f1f5f9;
-            margin-top: 40px;
-        }
-
-        .section-title:first-child {
-            margin-top: 0;
-        }
-
-        /* Hero Article */
-        .top-story {
-            margin-bottom: 30px;
-        }
-
-        .top-story img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            display: block;
-            margin-bottom: 15px;
-        }
-
-        .top-story h2 {
-            font-size: 26px;
-            margin: 10px 0 8px;
-            line-height: 1.3;
-            color: #ffffff;
-            font-weight: bold;
-        }
-
-        .top-story .source {
-            font-size: 13px;
-            color: #cbd5e1;
-            font-weight: bold;
-            margin-top: 8px;
-            display: block;
-        }
-
-        .top-story a {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        /* List Items */
-        .list-item {
-            display: block;
-            /* Vertical layout */
-            margin-bottom: 25px;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .list-item img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-right: 0;
-            margin-bottom: 12px;
-            background-color: #334155;
-            display: block;
-        }
-
-        .list-item-content {
-            display: block;
-        }
-
-        .list-item h3 {
-            font-size: 20px;
-            margin: 0 0 8px;
-            line-height: 1.4;
-            font-weight: bold;
-            color: #ffffff;
-        }
-
-        .list-item .meta {
-            font-size: 13px;
-            color: #94a3b8;
-            font-weight: 500;
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        /* Detail Grid */
-        .detail-grid {
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .detail-item {
-            display: inline-block;
-            width: 48%;
-            margin-bottom: 15px;
-            vertical-align: top;
-            text-decoration: none;
-        }
-
-        .detail-item:nth-child(even) {
-            margin-left: 3%;
-        }
-
-        .detail-item img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-            border-radius: 4px;
-            background-color: #334155;
-            display: block;
-        }
-
-        /* Share Button */
-        .share-section {
-            text-align: center;
-            margin: 20px 0 30px;
-            padding: 15px;
-            background-color: transparent;
-            border-radius: 8px;
-            border: 1px solid #334155;
-        }
-
-        .share-btn {
-            display: inline-block;
-            padding: 12px 28px;
-            background-color: transparent;
-            color: #ffffff !important;
-            border: 1px solid #ffffff;
-            text-decoration: none !important;
-            font-size: 15px;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-
-        .share-btn:hover {
-            background-color: #ffffff !important;
-            color: #1e293b !important;
-        }
-
-        .footer {
-            background-color: #0f172a;
-            padding: 40px 20px;
-            text-align: center;
-            font-size: 12px;
-            color: #94a3b8;
-            border-top: 1px solid #334155;
-        }
-
-        .footer a {
-            color: #cbd5e1;
-            text-decoration: underline;
-        }
-
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>오뉴 - 모닝 리포트</title>
+    <style type="text/css">
         @media only screen and (max-width: 600px) {
-            .list-item h3 {
-                font-size: 17px;
+            .full-width {
+                width: 100% !important;
+                display: block !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
             }
 
-            .top-story h2 {
-                font-size: 24px;
+            .grid-item {
+                width: 100% !important;
+                display: block !important;
+                margin: 0 0 20px 0 !important;
+            }
+
+            .grid-item img {
+                width: 100% !important;
             }
         }
     </style>
 </head>
 
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>오뉴 - 오피니언 뉴스레터</h1>
-            <p>{{ date_str }} 데일리 브리핑</p>
-        </div>
+<body
+    style="margin: 0; padding: 0; background-color: #020617; font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica', Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table border="0" cellpadding="0" cellspacing="0" width="600" class="full-width"
+                    style="max-width: 600px; width: 100%;">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 50px 20px 30px;">
+                            <h1
+                                style="margin: 0; font-size: 36px; font-weight: 900; color: #60a5fa; letter-spacing: -2px; line-height: 1; font-family: 'Pretendard', sans-serif;">
+                                오뉴</h1>
+                            <p
+                                style="margin: 12px 0 0; font-size: 11px; color: #475569; font-weight: bold; letter-spacing: 3px; text-transform: uppercase;">
+                                DAILY REPORT</p>
+                        </td>
+                    </tr>
 
-        <div class="content">
-            <!-- Top Stories (Top 6 Mixed) -->
-            {% if contents.top_stories %}
-            <div class="section-title">오늘의 헤드라인</div>
+                    <!-- Top Stories Section -->
+                    {% if contents.top_stories %}
+                    <tr>
+                        <td style="padding: 0 20px 15px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="border-left: 3px solid #3b82f6;">
+                                <tr>
+                                    <td style="padding-left: 12px;">
+                                        <span
+                                            style="font-size: 13px; font-weight: 900; color: #60a5fa; letter-spacing: 1px; text-transform: uppercase;">Today's
+                                            Highlights</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
-            <!-- Hero Article (First Item) -->
-            {% set hero = contents.top_stories[0] %}
-            <div class="top-story">
-                <a href="{{ hero.url }}">
-                    <img src="{{ hero.thumbnail }}" alt="{{ hero.title }}">
-                    <h2>{{ hero.title }}</h2>
-                    <div class="source">{{ hero.opinion_leader }}</div>
-                </a>
-            </div>
+                    {% for item in contents.top_stories %}
+                    <tr>
+                        <td style="padding: 0 20px 40px;">
+                            <a href="{{ item.url }}" style="text-decoration: none; display: block;">
+                                <img src="{{ item.thumbnail }}" alt="{{ item.title }}" width="560"
+                                    style="width: 100%; height: auto; border-radius: 16px; border: 1px solid #1e293b; display: block;" />
+                                <div style="padding-top: 15px;">
+                                    <span
+                                        style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;">{{
+                                        item.opinion_leader }}</span>
+                                    <!-- Reduced title font size significantly -->
+                                    <h2
+                                        style="margin: 0; font-size: 17px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
+                                        {{ item.title }}</h2>
+                                </div>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
 
-            <!-- Share Button -->
-            <div class="share-section">
-                <a href="https://opinionnewsletter-web-810426728503.asia-northeast3.run.app" class="share-btn">
-                    📤 무료 뉴스레터 친구에게 알려주기
-                </a>
-            </div>
+                    <!-- Category Sections -->
+                    {% if contents.category_stories %}
+                    {% for category, items in contents.category_stories.items() %}
+                    <tr>
+                        <td style="padding: 30px 20px 20px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="border-bottom: 2px solid #1e293b;">
+                                <tr>
+                                    <td style="padding-bottom: 12px;">
+                                        <h2
+                                            style="margin: 0; font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">
+                                            {{ category }}</h2>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
-            <!-- Remaining Top Stories -->
-            {% for item in contents.top_stories[1:] %}
-            <div class="list-item">
-                <a href="{{ item.url }}" style="text-decoration:none; color:inherit; width:100%;">
-                    <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
-                    <div class="list-item-content">
-                        <div class="meta">{{ item.opinion_leader }}</div>
-                        <h3>{{ item.title }}</h3>
-                    </div>
-                </a>
-            </div>
-            {% endfor %}
-            {% endif %}
+                    <tr>
+                        <td style="padding: 0 10px;">
+                            <div style="font-size: 0; text-align: left;">
+                                {% for item in items %}
+                                <!-- Grid Item: PC 2-col (280px), Mobile 1-col (via CSS) -->
+                                <div class="grid-item"
+                                    style="display: inline-block; width: 280px; margin: 0 5px 20px 5px; vertical-align: top;">
+                                    <a href="{{ item.url }}" style="text-decoration: none; display: block;">
+                                        <img src="{{ item.thumbnail }}" alt="{{ item.title }}" width="280"
+                                            style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #1e293b; display: block;" />
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
 
-            <!-- Category Stories Grid -->
-            {% if contents.category_stories %}
-            {% for category, items in contents.category_stories.items() %}
-            <div class="section-title">{{ category }} 인사이트</div>
-            <div class="detail-grid">
-                {% for item in items %}
-                <a href="{{ item.url }}" class="detail-item">
-                    <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
-                </a>
-                {% endfor %}
-            </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-
-        <div class="footer">
-            <p>&copy; 2026 Opinion Newsletter. All rights reserved.</p>
-            <p>
-                ONEW를 구독해 주셔서 감사합니다.<br>
-                <a href="#">구독 취소</a> | <a href="#">웹에서 보기</a>
-            </p>
-        </div>
-    </div>
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding: 80px 20px 40px; border-top: 1px solid #1e293b;">
+                            <p style="margin: 0; font-size: 11px; color: #475569; line-height: 1.8;">
+                                &copy; 2026 ONEW. All rights reserved.<br />
+                                <a href="#"
+                                    style="color: #64748b; text-decoration: underline;">수신거부</a>&nbsp;&nbsp;•&nbsp;&nbsp;<a
+                                    href="https://opinion-newsletter-web-810426728503.us-central1.run.app"
+                                    style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>

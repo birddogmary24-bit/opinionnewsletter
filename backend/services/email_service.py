@@ -43,7 +43,7 @@ class EmailService:
             return
 
         html_content = self.render_template(contents)
-        subject = f"ONEW Daily Briefing : {datetime.datetime.now().strftime('%m/%d')}"
+        subject = f"오뉴 - {datetime.datetime.now().strftime('%m월 %d일')} 리포트"
 
         try:
             # Connect to SMTP Server

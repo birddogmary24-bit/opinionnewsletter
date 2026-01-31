@@ -21,6 +21,12 @@ interface MailLog {
     simulated?: boolean;
 }
 
+interface Quota {
+    todayCount: number;
+    limit: number;
+    sender: string;
+}
+
 export default function AdminDashboard() {
     const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
     const [history, setHistory] = useState<MailLog[]>([]);
@@ -28,6 +34,7 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [stats, setStats] = useState({ total: 0, active: 0 });
+    const [quota, setQuota] = useState<Quota | null>(null);
     const [activeTab, setActiveTab] = useState<'subscribers' | 'stats' | 'history'>('subscribers');
     const router = useRouter();
 
@@ -67,6 +74,7 @@ export default function AdminDashboard() {
             const data = await res.json();
             if (data.history) setHistory(data.history);
             if (data.chartData) setChartData(data.chartData);
+            if (data.quota) setQuota(data.quota);
         } catch (error) {
             console.error('Failed to fetch stats');
         }
@@ -338,6 +346,49 @@ export default function AdminDashboard() {
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* System Status Table */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl">
+                                <h3 className="text-white text-lg font-black mb-6 flex items-center gap-2">
+                                    <Mail className="w-5 h-5 text-blue-400" />
+                                    발송 시스템 정보
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
+                                        <span className="text-slate-400 text-sm font-bold">연동 계정</span>
+                                        <span className="text-white font-mono text-sm">{quota?.sender || 'birddogmary24@gmail.com'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
+                                        <span className="text-slate-400 text-sm font-bold">일일 발송 제한</span>
+                                        <span className="text-white font-bold">{quota?.limit || 500}건</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl">
+                                <h3 className="text-white text-lg font-black mb-6 flex items-center gap-2">
+                                    <CheckCircle className="w-5 h-5 text-green-400" />
+                                    오늘의 발송 현황
+                                </h3>
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-end">
+                                        <div>
+                                            <p className="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">사용량</p>
+                                            <p className="text-3xl font-black text-white">{quota?.todayCount || 0} <span className="text-slate-500 text-lg">/ {quota?.limit || 500}</span></p>
+                                        </div>
+                                        <span className="text-blue-400 font-black text-xl">
+                                            {Math.round(((quota?.todayCount || 0) / (quota?.limit || 500)) * 100)}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-1000"
+                                            style={{ width: `${Math.min(100, ((quota?.todayCount || 0) / (quota?.limit || 500)) * 100)}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

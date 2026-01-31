@@ -49,9 +49,29 @@ export async function GET() {
                 count: dailyVolumes[date]
             }));
 
+        // 3. System Quota (Today's count)
+        const now = new Date();
+        const kstOffset = 9 * 60 * 60 * 1000;
+        const todayKST = new Date(now.getTime() + kstOffset).toISOString().split('T')[0];
+
+        let todayCount = 0;
+        history.forEach(log => {
+            if (log.sent_at) {
+                const logKST = new Date(new Date(log.sent_at).getTime() + kstOffset).toISOString().split('T')[0];
+                if (logKST === todayKST && log.status === 'success') {
+                    todayCount += (Number(log.recipient_count) || 0);
+                }
+            }
+        });
+
         return NextResponse.json({
             history,
-            chartData
+            chartData,
+            quota: {
+                todayCount,
+                limit: 500,
+                sender: process.env.GMAIL_USER || 'birddogmary24@gmail.com'
+            }
         });
     } catch (error) {
         console.error("Error fetching stats:", error);

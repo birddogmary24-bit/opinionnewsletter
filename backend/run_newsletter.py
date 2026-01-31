@@ -54,8 +54,8 @@ def run_newsletter_job():
         print("⚠️ No content found. Aborting.")
         return
 
-    # Logic: Top 6 mixed, rest grouped by opinion_leader
-    top_limit = 6
+    # Logic: Top 3 mixed, rest grouped by opinion_leader
+    top_limit = 3
     top_stories = all_contents[:top_limit]
     remaining_stories = all_contents[top_limit:]
     
