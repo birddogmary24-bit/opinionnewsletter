@@ -8,21 +8,23 @@ export async function GET(request: Request) {
     const mailId = searchParams.get('id');
     const target = searchParams.get('target') || 'article';
 
-    if (mailId && url) {
+    if (url) {
         try {
-            // 1. Log the click event
+            // 1. Log the click event in the general tracking_events collection
             await db.collection('tracking_events').add({
                 type: 'click',
-                mailId,
+                mailId: mailId || null, // Optional for web clicks
                 target,
                 url,
                 timestamp: FieldValue.serverTimestamp(),
             });
 
-            // 2. Increment the click_count in the mail_history
-            await db.collection('mail_history').doc(mailId).update({
-                click_count: FieldValue.increment(1)
-            });
+            // 2. Increment the click_count in the mail_history if mailId is present (Email clicks)
+            if (mailId) {
+                await db.collection('mail_history').doc(mailId).update({
+                    click_count: FieldValue.increment(1)
+                });
+            }
         } catch (error) {
             console.error("Click Tracking Error:", error);
         }
@@ -30,7 +32,12 @@ export async function GET(request: Request) {
 
     // Redirect to the original URL
     if (url) {
-        return NextResponse.redirect(new URL(url));
+        try {
+            return NextResponse.redirect(new URL(url));
+        } catch (e) {
+            // Fallback for relative or malformed URLs that work as strings
+            return NextResponse.redirect(url);
+        }
     }
 
     return NextResponse.json({ error: 'Missing URL' }, { status: 400 });
