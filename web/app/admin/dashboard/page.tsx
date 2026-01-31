@@ -67,6 +67,25 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleDelete = async (subscriberId: string) => {
+        if (!confirm('정말로 이 구독자를 삭제하시겠습니까?')) return;
+
+        try {
+            const res = await fetch(`/api/admin/subscribers/${subscriberId}`, {
+                method: 'DELETE',
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('삭제되었습니다.');
+                fetchSubscribers();
+            } else {
+                alert('삭제 실패: ' + data.message);
+            }
+        } catch (e) {
+            alert('삭제 중 오류가 발생했습니다.');
+        }
+    };
+
     const handleLogout = async () => {
         document.cookie = 'admin_session=; Max-Age=0; path=/;';
         router.push('/admin');
@@ -195,7 +214,10 @@ export default function AdminDashboard() {
                                                 >
                                                     메일 발송
                                                 </button>
-                                                <button className="text-slate-400 hover:text-red-400 text-xs font-medium transition-colors px-2">
+                                                <button
+                                                    onClick={() => handleDelete(sub.id)}
+                                                    className="text-slate-400 hover:text-red-400 text-xs font-medium transition-colors px-2"
+                                                >
                                                     삭제
                                                 </button>
                                             </td>

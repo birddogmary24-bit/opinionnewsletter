@@ -88,16 +88,14 @@ export default function Home() {
 
             {/* Header */}
             <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/5">
-                <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        <div className="flex flex-col md:flex-row md:items-end md:space-x-3">
-                            <span className="text-3xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-size-200 animate-gradient text-transparent bg-clip-text tracking-tighter" style={{ fontFamily: 'Pretendard, sans-serif' }}>
+                        <div className="flex items-center space-x-3">
+                            <span className="text-2xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-size-200 animate-gradient text-transparent bg-clip-text tracking-tighter" style={{ fontFamily: 'Pretendard, sans-serif' }}>
                                 오뉴
                             </span>
-                            <div className="flex items-center space-x-2 pb-1">
-                                <span className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-700"></span>
-                                <span className="text-lg font-bold text-slate-100 uppercase tracking-tight">오피니언 뉴스레터</span>
-                            </div>
+                            <span className="w-px h-4 bg-slate-700"></span>
+                            <span className="text-base font-bold text-slate-100 uppercase tracking-tight">오피니언 뉴스레터</span>
                         </div>
                     </div>
                     <button
@@ -110,24 +108,23 @@ export default function Home() {
             </header>
 
             {/* Hero Section */}
-            <section className="relative pt-24 pb-32 px-4 overflow-hidden">
+            <section className="relative pt-10 pb-12 px-4 overflow-hidden">
                 <div className="container mx-auto max-w-5xl text-center relative z-10">
-                    <div className="inline-block mb-10 px-6 py-2.5 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-xl border border-blue-500/30 rounded-full shadow-2xl shadow-blue-500/10 animate-bounce-subtle">
-                        <span className="text-sm md:text-base font-black text-blue-300 uppercase tracking-widest flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                    <div className="inline-block mb-6 px-5 py-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-xl border border-blue-500/30 rounded-full shadow-2xl shadow-blue-500/10 animate-bounce-subtle">
+                        <span className="text-xs md:text-sm font-bold text-blue-300 uppercase tracking-widest flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
                             매일 아침 7시 통찰의 배달
                         </span>
                     </div>
 
-                    <h1 className="text-5xl md:text-8xl font-black mb-10 leading-[1.1] tracking-tight">
-                        <span className="inline-block text-white">진짜를 보는</span>
-                        <br />
-                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent italic">
+                    <h1 className="text-3xl md:text-5xl font-black mb-6 leading-tight tracking-tight italic">
+                        <span className="text-white">진짜를 보는 </span>
+                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                             단 하나의 관점
                         </span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl text-slate-400 mb-16 max-w-3xl mx-auto leading-relaxed font-medium">
+                    <p className="text-lg md:text-xl text-slate-400 mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
                         세상의 소음 속에서 본질을 꿰뚫는 전문가들의 시선.<br className="hidden md:block" />
                         당신의 메일함으로 매일 아침 전해드립니다.
                     </p>
@@ -193,19 +190,19 @@ export default function Home() {
 
             {/* Features Stats Bar */}
             <div className="bg-white/5 border-y border-white/5 backdrop-blur-md">
-                <div className="container mx-auto max-w-6xl px-4 py-12">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                        <div>
-                            <div className="text-4xl font-black text-white mb-2 tracking-tighter">1,200+</div>
-                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">누적 구독자</div>
+                <div className="container mx-auto max-w-6xl px-4 py-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div className="flex flex-col md:flex-row items-center justify-center md:space-x-3">
+                            <div className="text-xl font-bold text-white tracking-tighter">1,200+</div>
+                            <div className="text-slate-500 font-medium uppercase tracking-widest text-[10px]">누적 구독자</div>
                         </div>
-                        <div>
-                            <div className="text-4xl font-black text-white mb-2 tracking-tighter">07:00 AM</div>
-                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">매일 배송 시간</div>
+                        <div className="flex flex-col md:flex-row items-center justify-center md:space-x-3">
+                            <div className="text-xl font-bold text-white tracking-tighter">07:00 AM</div>
+                            <div className="text-slate-500 font-medium uppercase tracking-widest text-[10px]">매일 배송 시간</div>
                         </div>
-                        <div>
-                            <div className="text-4xl font-black text-white mb-2 tracking-tighter">Top 30</div>
-                            <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">엄선된 전문 리포트</div>
+                        <div className="flex flex-col md:flex-row items-center justify-center md:space-x-3">
+                            <div className="text-xl font-bold text-white tracking-tighter">Top 30</div>
+                            <div className="text-slate-500 font-medium uppercase tracking-widest text-[10px]">엄선된 전문 리포트</div>
                         </div>
                     </div>
                 </div>
@@ -282,8 +279,8 @@ export default function Home() {
                                                 key={cat}
                                                 onClick={() => setActiveTab(cat)}
                                                 className={`px-8 py-3 rounded-2xl text-base font-bold transition-all whitespace-nowrap shadow-xl ${activeTab === cat
-                                                        ? 'bg-white text-slate-950 shadow-white/20 scale-105'
-                                                        : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                                                    ? 'bg-white text-slate-950 shadow-white/20 scale-105'
+                                                    : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
                                                     }`}
                                             >
                                                 {cat}
@@ -327,11 +324,6 @@ export default function Home() {
                                                     <h3 className="text-2xl md:text-3xl font-black text-white mb-5 group-hover:text-blue-400 transition-colors leading-tight tracking-tighter">
                                                         {item.title}
                                                     </h3>
-                                                    {item.description && (
-                                                        <p className="text-lg text-slate-400 font-medium mb-6 line-clamp-3 leading-relaxed opacity-85">
-                                                            {item.description}
-                                                        </p>
-                                                    )}
                                                     <a
                                                         href={item.url}
                                                         target="_blank"
