@@ -82,12 +82,17 @@ export default function Home() {
             {/* Header */}
             <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
                 <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-                    <div className="font-serif text-2xl font-bold text-amber-400 tracking-tight">
-                        오뉴
+                    <div className="flex items-baseline gap-2">
+                        <span className="font-serif text-xl md:text-2xl font-bold text-red-500 tracking-tight">
+                            오뉴
+                        </span>
+                        <span className="hidden sm:inline text-slate-500 text-xs md:text-sm">
+                            - 오피니언 뉴스레터
+                        </span>
                     </div>
                     <button
                         onClick={() => document.getElementById('subscribe-form')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="text-sm font-medium bg-amber-500 hover:bg-amber-400 text-slate-900 px-4 py-2 rounded transition-colors"
+                        className="text-sm font-medium bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors"
                     >
                         구독하기
                     </button>
@@ -97,7 +102,7 @@ export default function Home() {
             {/* Hero & Subscription */}
             <section className="bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 py-8 md:py-10">
                 <div className="container mx-auto px-4 text-center max-w-2xl">
-                    <h1 className="font-serif text-2xl md:text-3xl font-bold text-amber-400 mb-2">
+                    <h1 className="font-serif text-2xl md:text-3xl font-bold text-red-500 mb-2">
                         세상의 소음을 걸러낸 오피니언 뉴스레터
                     </h1>
                     <p className="text-slate-400 mb-6 text-sm md:text-base">
@@ -121,14 +126,14 @@ export default function Home() {
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="이메일 주소"
-                                            className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-slate-100 placeholder-slate-500"
+                                            className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-slate-100 placeholder-slate-500"
                                             disabled={status === 'loading'}
                                         />
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={status === 'loading'}
-                                        className="bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 rounded font-bold transition-all flex items-center justify-center whitespace-nowrap"
+                                        className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded font-bold transition-all flex items-center justify-center whitespace-nowrap"
                                     >
                                         {status === 'loading' ? <Loader2 className="animate-spin w-5 h-5" /> : '구독'}
                                     </button>
@@ -140,7 +145,7 @@ export default function Home() {
                                         id="privacy-check"
                                         checked={agreed}
                                         onChange={(e) => setAgreed(e.target.checked)}
-                                        className="text-amber-500 bg-slate-800 border-slate-700 focus:ring-amber-500 rounded"
+                                        className="text-red-500 bg-slate-800 border-slate-700 focus:ring-red-500 rounded"
                                     />
                                     <label htmlFor="privacy-check" className="text-xs text-slate-400 cursor-pointer select-none">
                                         개인정보 수집/활용에 동의합니다.
@@ -167,8 +172,8 @@ export default function Home() {
                     <>
                         {/* Top Focus */}
                         <div className="mb-16">
-                            <div className="flex items-center justify-between mb-6 border-b border-amber-500/30 pb-4">
-                                <h2 className="text-xl font-bold font-serif text-amber-400">Today's Focus</h2>
+                            <div className="flex items-center justify-between mb-6 border-b border-red-500/30 pb-4">
+                                <h2 className="text-xl font-bold font-serif text-red-500">Today's Focus</h2>
                                 <span className="text-xs text-slate-500 font-mono">{new Date().toLocaleDateString('ko-KR')}</span>
                             </div>
 
@@ -187,20 +192,22 @@ export default function Home() {
                                                     src={content.thumbnail}
                                                     alt={content.title}
                                                     fill
-                                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    unoptimized
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-600">No Image</div>
                                             )}
                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                <Play className="text-amber-400 opacity-0 group-hover:opacity-100 w-12 h-12 drop-shadow-lg transition-opacity" />
+                                                <Play className="text-red-500 opacity-0 group-hover:opacity-100 w-12 h-12 drop-shadow-lg transition-opacity" />
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
+                                            <span className="text-xs font-bold text-red-500 uppercase tracking-wider">
                                                 {content.opinion_leader}
                                             </span>
-                                            <h3 className="text-lg font-bold leading-snug text-slate-200 group-hover:text-amber-400 transition-colors line-clamp-2">
+                                            <h3 className="text-lg font-bold leading-snug text-slate-200 group-hover:text-red-500 transition-colors line-clamp-2">
                                                 {content.title}
                                             </h3>
                                         </div>
@@ -220,7 +227,7 @@ export default function Home() {
                                             key={cat}
                                             onClick={() => setActiveTab(cat)}
                                             className={`px-3 py-1 text-sm rounded-full whitespace-nowrap transition-colors ${activeTab === cat
-                                                    ? 'bg-amber-500 text-slate-900 font-medium'
+                                                    ? 'bg-red-500 text-white font-medium'
                                                     : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                                                 }`}
                                         >
@@ -245,13 +252,15 @@ export default function Home() {
                                                     src={content.thumbnail}
                                                     alt={content.title}
                                                     fill
-                                                    className="object-cover w-full h-full"
+                                                    sizes="128px"
+                                                    className="object-cover"
+                                                    unoptimized
                                                 />
                                             )}
                                         </div>
                                         <div className="flex flex-col justify-center">
                                             <span className="text-xs text-slate-500 mb-1">{content.opinion_leader}</span>
-                                            <h4 className="text-sm font-medium leading-snug text-slate-300 group-hover:text-amber-400 line-clamp-2">
+                                            <h4 className="text-sm font-medium leading-snug text-slate-300 group-hover:text-red-500 line-clamp-2">
                                                 {content.title}
                                             </h4>
                                         </div>
@@ -273,9 +282,9 @@ export default function Home() {
                 <div className="container mx-auto px-4">
                     <p className="mb-4">&copy; 2026 오뉴. All rights reserved.</p>
                     <div className="flex justify-center gap-6">
-                        <a href="#" className="hover:text-amber-400 transition-colors">이용약관</a>
-                        <a href="#" className="hover:text-amber-400 transition-colors">개인정보처리방침</a>
-                        <a href="#" className="hover:text-amber-400 transition-colors">문의하기</a>
+                        <a href="#" className="hover:text-red-500 transition-colors">이용약관</a>
+                        <a href="#" className="hover:text-red-500 transition-colors">개인정보처리방침</a>
+                        <a href="#" className="hover:text-red-500 transition-colors">문의하기</a>
                     </div>
                 </div>
             </footer>

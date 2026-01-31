@@ -9,9 +9,12 @@ class YouTubeCrawler:
     def __init__(self):
         self.ydl_opts = {
             'quiet': True,
-            'extract_flat': True,  # Don't download video, just get metadata
+            'extract_flat': False,  # Get full metadata including proper titles
             'force_generic_extractor': False,
             'ignoreerrors': True,
+            'writesubtitles': False,
+            'skip_download': True,
+            'no_warnings': True,
         }
 
     def fetch_latest_videos(self, channel_url, limit=5, opinion_leader_name="Unknown"):
