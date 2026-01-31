@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+firebase-admin
+google-cloud-firestore
+google-cloud-scheduler
+pycryptodome
+python-dotenv
+yt-dlp
+jinja2

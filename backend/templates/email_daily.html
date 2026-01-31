@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ date_str }} Newsletter</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #102a43; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #102a43; color: #ffffff; padding: 30px 20px; text-align: center; }
+        .header h1 { margin: 0; font-family: 'Georgia', serif; font-size: 28px; letter-spacing: 1px; }
+        .header p { margin: 10px 0 0; font-size: 12px; color: #829ab1; text-transform: uppercase; letter-spacing: 2px; }
+        .content { padding: 40px 20px; }
+        .section-title { font-size: 18px; font-weight: bold; border-bottom: 2px solid #f0f4f8; padding-bottom: 10px; margin-bottom: 20px; color: #334e68; }
+        .top-story { margin-bottom: 40px; }
+        .top-story img { width: 100%; height: auto; border-radius: 4px; display: block; }
+        .top-story h2 { font-size: 20px; margin: 15px 0 10px; line-height: 1.4; color: #102a43; }
+        .top-story p { font-size: 14px; line-height: 1.6; color: #486581; margin: 0 0 15px; }
+        .top-story .source { font-size: 11px; color: #829ab1; font-weight: bold; text-transform: uppercase; }
+        .list-item { display: flex; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f4f8; }
+        .list-item:last-child { border-bottom: none; }
+        .list-item img { width: 120px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px; background-color: #f0f4f8; }
+        .list-item-content { flex: 1; }
+        .list-item h3 { font-size: 15px; margin: 0 0 5px; line-height: 1.4; }
+        .list-item h3 a { color: #102a43; text-decoration: none; }
+        .list-item .meta { font-size: 11px; color: #829ab1; margin-top: 5px; }
+        .footer { background-color: #f0f4f8; padding: 40px 20px; text-align: center; font-size: 12px; color: #829ab1; }
+        .footer a { color: #627d98; text-decoration: underline; }
+        .btn { display: inline-block; padding: 8px 16px; background-color: #102a43; color: white; text-decoration: none; font-size: 12px; border-radius: 4px; margin-top: 5px; }
+        @media only screen and (max-width: 600px) {
+            .list-item { flex-direction: column; }
+            .list-item img { width: 100%; height: auto; margin-right: 0; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ONEW</h1>
+            <p>{{ date_str }} Daily Briefing</p>
+        </div>
+        
+        <div class="content">
+            <!-- Top Stories (First 1) -->
+            {% if contents %}
+            <div class="section-title">Today's Focus</div>
+            <div class="top-story">
+                <a href="{{ contents[0].url }}" style="text-decoration:none;">
+                    <img src="{{ contents[0].thumbnail }}" alt="{{ contents[0].title }}">
+                    <div class="source">{{ contents[0].opinion_leader }}</div>
+                    <h2>{{ contents[0].title }}</h2>
+                    <p>{{ contents[0].description }}</p>
+                    <span class="btn">Watch Now &rarr;</span>
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Other Stories -->
+            {% if contents|length > 1 %}
+            <div class="section-title">More Insights</div>
+            {% for item in contents[1:] %}
+            <div class="list-item">
+                <a href="{{ item.url }}" style="text-decoration:none; display:flex; color:inherit; width:100%;">
+                    <div style="flex-shrink:0;">
+                       <img src="{{ item.thumbnail }}" alt="{{ item.title }}">
+                    </div>
+                    <div class="list-item-content">
+                        <h3>{{ item.title }}</h3>
+                        <div class="meta">{{ item.opinion_leader }}</div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 Opinion Newsletter. All rights reserved.</p>
+            <p>
+                You received this email because you subscribed to ONEW.<br>
+                <a href="#">Unsubscribe</a> | <a href="#">View in Browser</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
