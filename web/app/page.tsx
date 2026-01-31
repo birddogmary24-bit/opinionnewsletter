@@ -252,22 +252,22 @@ export default function Home() {
 
                             {/* Detailed List Section */}
                             <div className="max-w-5xl mx-auto">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 bg-white/5 p-6 rounded-3xl border border-white/5 backdrop-blur-xl">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white/5 p-3 rounded-2xl border border-white/5 backdrop-blur-xl">
                                     <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1">
                                         {categories.map(cat => (
                                             <button
                                                 key={cat}
                                                 onClick={() => setActiveTab(cat)}
-                                                className={`px-8 py-3 rounded-2xl text-base font-bold transition-all whitespace-nowrap shadow-xl ${activeTab === cat
-                                                    ? 'bg-white text-slate-950 shadow-white/20 scale-105'
-                                                    : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                                                className={`px-6 py-1.5 rounded-xl text-sm md:text-base font-bold transition-all whitespace-nowrap shadow-xl ${activeTab === cat
+                                                    ? 'bg-white text-slate-950 shadow-white/20'
+                                                    : 'bg-transparent text-slate-200 hover:text-white hover:bg-white/5'
                                                     }`}
                                             >
                                                 {cat}
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="text-xs font-bold text-slate-500 italic">
+                                    <div className="text-[10px] md:text-xs font-bold text-slate-400 italic px-3">
                                         총 {filteredRemaining.length}건의 인사이트
                                     </div>
                                 </div>
