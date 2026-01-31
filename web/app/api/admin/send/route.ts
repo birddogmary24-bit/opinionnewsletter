@@ -8,11 +8,11 @@ import path from 'path';
 import Handlebars from 'handlebars';
 
 // Register Handlebars helpers
-Handlebars.registerHelper('encodeURL', function(url: string) {
+Handlebars.registerHelper('encodeURL', function (url: string) {
     return encodeURIComponent(url);
 });
 
-Handlebars.registerHelper('formatNumber', function(num: number) {
+Handlebars.registerHelper('formatNumber', function (num: number) {
     if (typeof num !== 'number') return '0';
     return num.toLocaleString('ko-KR');
 });
@@ -132,7 +132,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, count: recipients.length, simulated: true });
         }
 
-        const subjectDate = `${new Date().getMonth() + 1}/${new Date().getDate()}`;
+        // Calculate KST date (UTC+9)
+        const now = new Date();
+        const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+        const subjectDate = `${kstDate.getMonth() + 1}/${kstDate.getDate()}`;
+
         const promises = recipients.map(to => {
             return transporter.sendMail({
                 from: `"오뉴 뉴스레터" <${process.env.GMAIL_USER}>`,

@@ -37,7 +37,7 @@ export default function AdminDashboard() {
     const [sending, setSending] = useState(false);
     const [stats, setStats] = useState({ total: 0, active: 0 });
     const [quota, setQuota] = useState<Quota | null>(null);
-    const [activeTab, setActiveTab] = useState<'subscribers' | 'stats' | 'history'>('subscribers');
+    const [activeTab, setActiveTab] = useState<'subscribers' | 'stats' | 'history'>('stats');
     const router = useRouter();
 
     useEffect(() => {
@@ -198,8 +198,8 @@ export default function AdminDashboard() {
                         <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" style={{ fontFamily: 'Pretendard, sans-serif' }}>오뉴 관리자</span>
                         <nav className="hidden md:flex space-x-1">
                             {[
-                                { id: 'subscribers', label: '구독자 목록', icon: Users },
                                 { id: 'stats', label: '발송 통계', icon: BarChart3 },
+                                { id: 'subscribers', label: '구독자 목록', icon: Users },
                                 { id: 'history', label: '발송 이력', icon: History }
                             ].map(tab => (
                                 <button
@@ -479,6 +479,84 @@ export default function AdminDashboard() {
                                                 </tr>
                                             ))
                                         )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Daily Tracking Metrics Table */}
+                        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden">
+                            <div className="px-8 py-6 border-b border-white/5 bg-white/5 font-black text-lg">
+                                일별 오픈 및 클릭 통계
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                                            <th className="px-8 py-5">날짜</th>
+                                            <th className="px-8 py-5">발송 건수</th>
+                                            <th className="px-8 py-5">오픈 횟수</th>
+                                            <th className="px-8 py-5">클릭 횟수</th>
+                                            <th className="px-8 py-5">오픈율</th>
+                                            <th className="px-8 py-5 text-right">클릭율</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5 text-sm">
+                                        {(() => {
+                                            // Group history by date
+                                            const dailyStats = history
+                                                .filter(log => log.status === 'success' && !log.simulated)
+                                                .reduce((acc, log) => {
+                                                    const date = log.sent_at ? new Date(log.sent_at).toLocaleDateString('ko-KR', {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit'
+                                                    }).replace(/\. /g, '-').replace('.', '') : 'Unknown';
+
+                                                    if (!acc[date]) {
+                                                        acc[date] = {
+                                                            date,
+                                                            totalRecipients: 0,
+                                                            totalOpens: 0,
+                                                            totalClicks: 0
+                                                        };
+                                                    }
+
+                                                    acc[date].totalRecipients += log.recipient_count || 0;
+                                                    acc[date].totalOpens += log.open_count || 0;
+                                                    acc[date].totalClicks += log.click_count || 0;
+
+                                                    return acc;
+                                                }, {} as Record<string, { date: string; totalRecipients: number; totalOpens: number; totalClicks: number; }>);
+
+                                            const sortedStats = Object.values(dailyStats).sort((a, b) =>
+                                                new Date(b.date).getTime() - new Date(a.date).getTime()
+                                            );
+
+                                            return sortedStats.length === 0 ? (
+                                                <tr><td colSpan={6} className="px-8 py-10 text-center text-slate-500">통계 데이터가 없습니다.</td></tr>
+                                            ) : (
+                                                sortedStats.map((stat) => {
+                                                    const openRate = stat.totalRecipients > 0
+                                                        ? ((stat.totalOpens / stat.totalRecipients) * 100).toFixed(1)
+                                                        : '0.0';
+                                                    const clickRate = stat.totalRecipients > 0
+                                                        ? ((stat.totalClicks / stat.totalRecipients) * 100).toFixed(1)
+                                                        : '0.0';
+
+                                                    return (
+                                                        <tr key={stat.date} className="hover:bg-white/[0.02] transition-colors">
+                                                            <td className="px-8 py-5 font-bold text-slate-300">{stat.date}</td>
+                                                            <td className="px-8 py-5 font-black text-white">{stat.totalRecipients.toLocaleString()}건</td>
+                                                            <td className="px-8 py-5 font-bold text-blue-400">{stat.totalOpens.toLocaleString()}</td>
+                                                            <td className="px-8 py-5 font-bold text-purple-400">{stat.totalClicks.toLocaleString()}</td>
+                                                            <td className="px-8 py-5 font-bold text-green-400">{openRate}%</td>
+                                                            <td className="px-8 py-5 text-right font-bold text-amber-400">{clickRate}%</td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            );
+                                        })()}
                                     </tbody>
                                 </table>
                             </div>

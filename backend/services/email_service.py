@@ -52,8 +52,11 @@ class EmailService:
             return
 
         html_content = self.render_template(contents)
-        now = datetime.datetime.now()
-        subject = f"오뉴 - 오늘의 오피니언 뉴스 [{now.month}/{now.day}]"
+        # Use KST timezone (UTC+9)
+        import pytz
+        kst = pytz.timezone('Asia/Seoul')
+        now_kst = datetime.datetime.now(kst)
+        subject = f"오뉴 - 오늘의 오피니언 뉴스 [{now_kst.month}/{now_kst.day}]"
 
         try:
             # Connect to SMTP Server
