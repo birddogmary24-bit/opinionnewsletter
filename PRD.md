@@ -1,103 +1,73 @@
-# Product Requirements Document (PRD): Opinion Newsletter
+# Product Requirements Document (PRD): 오뉴 (ONEW)
 
 ## 1. Project Overview
-**Project Name:** Opinion Newsletter (Working Title)
+**Project Name:** 오뉴 (ONEW) - Opinion Newsletter
 **Description:** A premium daily newsletter service that aggregates high-quality content (YouTube, Blogs, Articles) from opinion leaders in Economy, Politics, Society, Education, Culture, IT, and Tech.
-**Goal:** To provide busy professionals (Target 30-70s males) with a curated summary of insights from trusted voices every morning.
+**Goal:** To provide busy professionals with a curated summary of insights from trusted voices every morning at 07:00 AM KST.
 
 ## 2. Target Audience
-- **Demographics:** Males aged 30-70.
-- **Psychographics:** Interest in self-improvement, current affairs, economic trends, and professional growth. Prefers "Institutional" and reliable tone over light or purely entertainment-focused content.
-- **Pain Points:** Information overload, lack of time to find quality content from scattered sources (YouTube, News sites, etc.).
+- **Demographics:** Professionals aged 30-70 interested in current affairs and economic trends.
+- **Tone:** Premium, Institutional, and Trustworthy. "The Economist" or "New York Times" inspired aesthetic.
 
 ## 3. Product Features
 
-### 3.1. Content Aggregation & Management (Back-office)
-- **Content Sources:**
-  - YouTube Channels (Specific Opinion Leaders).
-  - Naver Blogs / Branded Columns.
-  - Major News Media Columns.
-  - *Must be publicly accessible via web crawling.*
-- **Data Collection (Crawler):**
-  - **Frequency:** Daily (Automated).
-  - **Extracted Data:** Thumbnail URL, Title, Content Summary (Description), Opinion Leader Name/Source, Original Link, Publish Date.
-  - **Storage:** Database (Firestore) to store legitimate meta-content.
+### 3.1. Branding & Design (Implemented)
+- **Brand Name:** 오뉴 (ONEW) - "Opinion Newsletter" abbreviation.
+- **Theme:** Premium Dark Mode (Slate-950) with fluid gradients (Blue/Purple/Amber).
+- **Typography:** Pretendard (Korean) & Inter/System fonts for a clean, professional look.
+- **Animations:** Subtle hover effects, bouncing CTA badges, and ambient background blurs.
+- **Responsive:** Mobile-first design for reading on the go.
 
-### 3.2. Newsletter Service
-- **Distribution:** Daily at 07:00 AM KST.
-- **Format:** HTML Responsive Email (Mobile & PC optimized).
-- **Structure:**
-  - **Header:** Branding (Premium/Institutional feel), Date.
-  - **Core Content (Top 5):**
-    - Layout: Large Thumbnail, Title, Leader Name, Brief Summary.
-    - Selection Logic: Manually selected or Algorithmically (e.g., highest views/recent) - *Initial phase: automated based on recency/popularity.*
-  - **Categorized Content (~30 items):**
-    - Layout: List/Grid view, smaller thumbnails or text-heavy to save space.
-    - Pagination/Scroll: "Read More" links if too long for email client (though email usually doesn't have pagination, will implement "Best 30" via clean layout categories).
-    - Categories: Economy, Politics, IT/Tech, Culture, etc.
-  - **Footer:** Unsubscribe link, Privacy Policy link, Contact.
+### 3.2. Subscription Web App (Implemented)
+- **Landing Page:** 
+  - Hero section with high-impact value proposition.
+  - Simplified header: "오뉴" Logo (Left) + "구독하기" Button (Right).
+  - Subscription form with email validation and required Privacy Policy agreement (Checkbox).
+  - Content Preview: "Today's Newsletter Preview" showing top 30+ items.
+  - Sorting/Filtering: Categorized view by Opinion Leader (e.g., 슈카월드, 매경 월가월부).
 
-### 3.3. Subscription Website (Web App)
-- **Landing Page:**
-  - Premium design with "Institutional/Trusted" aesthetic.
-  - Service Introduction.
-  - Rotating Banners of Opnion Leaders (Images).
-  - **Call to Action:** Email Input Field + Subscribe Button.
-- **Security:**
-  - Email encryption (AES-256 or equivalent) for storage.
-  - HTTPS enforced.
-- **Design Guidelines:**
-  - **Vibe:** Reliable, Classic but Modern, "The Economist" or "New York Times" feel.
-  - **Color Palette:** Deep Blues, Greys, Serif fonts for headings (Trustworthy).
+### 3.3. Content Aggregator & Crawler (Implemented)
+- **Automated Collection:** Daily crawler runs at 06:00 AM KST.
+- **Sources:** Major YouTube channels and opinion leader blogs.
+- **Data Extracted:** Korean Titles (Sanitized), Thumbnails, Publisher Name, Original URL, Scrape Date.
+- **Database:** Firestore (GCP) for real-time synchronization.
 
-### 3.4. Admin Dashboard
-- **Access Control:** Password protected (`opinion2026`).
-- **Subscriber Management:**
-  - View list (masked/encrypted).
-  - Add/Delete subscribers manually.
-- **Newsletter Operations:**
-  - Manual Trigger / Test Send (Individual or Bulk).
-  - Status View (Last run status).
+### 3.4. Administrative Dashboard (Implemented)
+- **URL:** `/admin` (Protected with password: `opinion2026`).
+- **Dashboard Features:**
+  - **Subscriber Management:** View active subscriber list, see join dates.
+  - **Account Deletion:** Delete subscribers with a confirmation popup to prevent accidental removal.
+  - **Manual Trigger:** "Send Newsletter" button for both bulk (all active users) or individual testing.
+  - **Stats & History:** 
+    - Real-time visualization of sending volume (Daily Chart).
+    - Detailed `mail_history` log showing recipient counts and timestamps.
+  - **Stats:** Overview of total and active subscribers.
+
+### 3.5. Newsletter Service (Implemented)
+- **Transmission:** Daily at 07:00 AM KST via automated scheduler.
+- **Format:** Responsive HTML Email.
+- **Content Structure:** Top 5 "Focus" items followed by categorized "Archive" list.
 
 ## 4. Technical Architecture
-**Cloud Provider:** Google Cloud Platform (GCP)
--### 3. Frontend (Web)
-- **Framework**: Next.js (App Router).
-- **Styling**: Tailwind CSS.
-- **Design Concept**:
-    - Reference: [JoongAng Newsletter](https://www.joongang.co.kr/newsletter).
-    - Style: Clean, grid-based, content-focused news portal.
-    - Color Palette: Navy (Trust) & White/Gray (Clean), avoiding excessive whitespace.
-- **Key Sections**:
-    1.  **Header**: Simplified. Logo (Left) + Subscribe Button (Right). Remove dead links.
-    2.  **Hero/Subscription**:
-        - Reduced vertical whitespace.
-        - **Scanning**: High-contrast Subscription Form (Input + Button).
-        - **Compliance**: "Personal Information Collection & Usage Agreement" checkbox (Required).
-    3.  **Content Area**:
-        - **Top Focus**: Top 5-6 latest/important videos. (Thumbnail + Title + Source only). No descriptions.
-        - **Archive/Explore**: Remaining articles (~30+) filtered by Category/Source.
-- **Localization**: All UI text must be in **Korean**.
-- **SEO**: Basic meta tags for "ONEW".
-- **Backend (API/Crawler):** Python (FastAPI or purely Cloud Functions) or Node.js.
-- **Database:** Google Firestore (NoSQL) for content and subscribers.
-- **Scheduling:** Cloud Scheduler (for 7 AM trigger).
-- **Email Service:** Nodemailer (with Gmail SMTP for MVP) or SendGrid/Gun (for Production).
-- **Hosting:** Cloud Run or Firebase Hosting.
+**Cloud Infrastructure:** Google Cloud Platform (GCP)
+- **Frontend/API:** Next.js (App Router) deployed on **Cloud Run**.
+- **Database:** Google Cloud Firestore (NoSQL).
+- **Automation:** Cloud Scheduler triggering Cloud Run Jobs (Crawler/Sender).
+- **Email Service:** Nodemailer with secure SMTP integration.
+- **Styling:** Tailwind CSS with Lucide Icons.
 
-## 5. Implementation Roadmap (Summary)
-1.  **Setup:** GCP Project config, Repository init.
-2.  **Core Logic:** Build Crawler & Database Schema.
-3.  **Admin/Backend:** API for managing subs and triggering sends.
-4.  **Frontend:** Landing page & Admin UI.
-5.  **Polishing:** Design refinement, Email template testing.
+## 5. Deployment Status
+- **Status:** **Production Ready / Deployed**
+- **Cloud Account:** GCP (`birddogmary24@gmail.com`)
+- **Git Repo:** Pushed and synced with latest UI optimizations (Mobile & Typography refinements).
+- **CI/CD:** Manual deployment via Cloud Run (GCP CLI).
 
-## 6. Design & User Experience (UX)
-- **Responsive:** Mobile-first approach for the Newsletter (since most open emails on phone).
-- **Aesthetics:**
-  - *Avoid:* Neon colors, playful fonts, clutter.
-  - *Adopt:* Clean lines, high contrast text, professional imagery.
+## 6. Design & UX Principles
+- **Aesthetics:** Minimalist, high-contrast, premium dark theme. 
+- **User Flow:** Single-click subscription -> Instant confirmation -> Daily delivery.
+- **Visuals:** Larger thumbnails for top content, clean list view for archives.
 
-## 7. Open Questions / Next Steps
-- Finalize list of 5-10 Opinion Leaders for MVP.
-- Confirm Email Service Provider (Gmail limit is 500/day, ok for testing).
+## 7. Future Roadmap (Planned)
+1.  **Open Rate Analytics:** Tracking email opens via 1x1 pixel.
+2.  **Personalized Categories:** Allow users to select specific interests upon signup.
+3.  **Expanding Sources:** Adding international news media (FT, NYT) with auto-translation.

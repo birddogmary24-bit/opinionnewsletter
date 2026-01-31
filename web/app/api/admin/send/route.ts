@@ -97,10 +97,29 @@ export async function POST(request: Request) {
 
         await Promise.allSettled(promises);
 
+        // 6. Log History
+        await db.collection('mail_history').add({
+            sent_at: new Date().toISOString(),
+            type,
+            recipient_count: recipients.length,
+            status: 'success',
+            simulated: !process.env.GMAIL_USER
+        });
+
         return NextResponse.json({ success: true, count: recipients.length });
 
     } catch (error) {
         console.error("Sending error:", error);
+        // Log Error also
+        try {
+            await db.collection('mail_history').add({
+                sent_at: new Date().toISOString(),
+                type: 'error',
+                recipient_count: 0,
+                status: 'error',
+                error_message: String(error)
+            });
+        } catch (e) { }
         return NextResponse.json({ error: 'Failed to send' }, { status: 500 });
     }
 }

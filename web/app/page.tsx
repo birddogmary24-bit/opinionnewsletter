@@ -207,19 +207,6 @@ export default function Home() {
             {/* Content Preview */}
             <main className="py-20 px-4 relative z-10 bg-slate-950/50">
                 <div className="container mx-auto max-w-6xl">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-l-4 border-blue-500 pl-8 text-left">
-                        <div>
-                            <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tighter leading-tight">
-                                오늘의 뉴스레터<br className="md:hidden" /> 미리보기
-                            </h2>
-                            <p className="text-lg text-slate-400 font-medium italic">핵심만 선별한 오늘의 리포트입니다.</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-                            <span className="text-base font-black text-white uppercase tracking-tighter">Live Updates</span>
-                        </div>
-                    </div>
-
                     {loadingContent ? (
                         <div className="flex flex-col items-center justify-center py-40 gap-4">
                             <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
