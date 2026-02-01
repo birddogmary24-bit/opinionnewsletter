@@ -322,28 +322,30 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 backdrop-blur-xl p-8 rounded-[2rem] border border-blue-500/20 shadow-2xl h-full flex flex-col justify-center space-y-4">
-                        <h3 className="text-white text-lg font-black mb-2 flex items-center gap-2">
-                            <SendHorizontal className="w-5 h-5 text-blue-400" />
-                            빠른 발송
-                        </h3>
-                        <div className="grid grid-cols-1 gap-4">
-                            <button
-                                onClick={() => handleSend('group', 'test')}
-                                disabled={sending}
-                                className="w-full bg-slate-100 text-slate-950 hover:bg-white px-6 py-4 rounded-2xl font-black transition-all duration-300 flex items-center justify-center shadow-xl active:scale-95 disabled:opacity-50"
-                            >
-                                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5 mr-3" />}
-                                테스트 그룹 발송 ({stats.test}명)
-                            </button>
-                            <button
-                                onClick={() => handleSend('group', 'production')}
-                                disabled={sending}
-                                className="w-full bg-blue-600 text-white hover:bg-blue-500 px-6 py-4 rounded-2xl font-black transition-all duration-300 flex items-center justify-center shadow-xl active:scale-95 disabled:opacity-50"
-                            >
-                                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <SendHorizontal className="w-5 h-5 mr-3" />}
-                                실제 운영 발송 ({stats.active - stats.test}명)
-                            </button>
+                    <div className="lg:col-span-4">
+                        <div className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 backdrop-blur-xl p-8 rounded-[2rem] border border-blue-500/20 shadow-2xl h-full flex flex-col justify-center space-y-4">
+                            <h3 className="text-white text-lg font-black mb-2 flex items-center gap-2">
+                                <SendHorizontal className="w-5 h-5 text-blue-400" />
+                                빠른 발송
+                            </h3>
+                            <div className="grid grid-cols-1 gap-4">
+                                <button
+                                    onClick={() => handleSend('group', 'test')}
+                                    disabled={sending}
+                                    className="w-full bg-slate-100 text-slate-950 hover:bg-white px-6 py-4 rounded-2xl font-black transition-all duration-300 flex items-center justify-center shadow-xl active:scale-95 disabled:opacity-50"
+                                >
+                                    {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5 mr-3" />}
+                                    테스트 그룹 발송 ({stats.test}명)
+                                </button>
+                                <button
+                                    onClick={() => handleSend('group', 'production')}
+                                    disabled={sending}
+                                    className="w-full bg-blue-600 text-white hover:bg-blue-500 px-6 py-4 rounded-2xl font-black transition-all duration-300 flex items-center justify-center shadow-xl active:scale-95 disabled:opacity-50"
+                                >
+                                    {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <SendHorizontal className="w-5 h-5 mr-3" />}
+                                    실제 운영 발송 ({stats.active - stats.test}명)
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
