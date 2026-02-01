@@ -44,9 +44,9 @@ def run_newsletter_job(is_production=False):
     print(f"🚀 Starting Newsletter Delivery Job [{mode_text}]...")
     db = get_db()
     
-    # 1. Fetch Latest Content (Within 48 hours to ensure enough content)
-    print("Fetching today's content (last 48h)...")
-    yesterday = datetime.datetime.now() - datetime.timedelta(hours=48)
+    # 1. Fetch Latest Content (Within 24 hours for fresh daily delivery)
+    print("Fetching today's content (last 24h)...")
+    yesterday = datetime.datetime.now() - datetime.timedelta(hours=24)
     
     docs = db.collection('contents')\
         .where('scraped_at', '>=', yesterday)\
