@@ -52,45 +52,53 @@ class YouTubeCrawler:
                         if not entry:
                             continue
                         
-                        # Get video ID and fetch full info to get proper Korean title
                         video_id = entry.get('id')
                         if not video_id:
                             continue
                         
-                        # Fetch full video info to get Korean title
                         video_url = f"https://www.youtube.com/watch?v={video_id}"
+                        
+                        # Default data from flat entry (Initial fallback)
+                        title = entry.get('title', 'Unknown Title')
+                        view_count = entry.get('view_count')
+                        thumbnails = entry.get('thumbnails', [])
+                        thumbnail_url = thumbnails[-1]['url'] if thumbnails else f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
+                        description = "No description available."
+                        
+                        # Try full extraction for richer data, but fallback if blocked
                         try:
+                            # We use a separate instance for individual video to avoid state issues if one fails
                             video_info = ydl.extract_info(video_url, download=False)
-                            
-                            title = video_info.get('title', '')
-                            thumbnails = video_info.get('thumbnails', [])
-                            thumbnail_url = thumbnails[-1]['url'] if thumbnails else f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
-                            
-                            # Generate a simple description if missing
-                            description = video_info.get('description', '')
-                            if not description:
-                                description = "No description available."
+                            if video_info:
+                                title = video_info.get('title', title)
+                                view_count = video_info.get('view_count', view_count)
+                                description_full = video_info.get('description', '')
+                                if description_full:
+                                    description = description_full[:200] + "..." if len(description_full) > 200 else description_full
+                                thumbnails = video_info.get('thumbnails', thumbnails)
+                                if thumbnails:
+                                    # Pick the best thumbnail
+                                    thumbnail_url = thumbnails[-1]['url']
+                                print(f"  ✓ Fetched full info for: {title}")
                             else:
-                                # Truncate description for preview
-                                description = description[:200] + "..." if len(description) > 200 else description
-
-                            video_data = {
-                                'source_type': 'youtube',
-                                'opinion_leader': opinion_leader_name,
-                                'title': title,
-                                'url': video_url,
-                                'thumbnail': thumbnail_url,
-                                'description': description,
-                                'published_at': datetime.datetime.now().isoformat(),
-                                'original_id': video_id,
-                                'view_count': video_info.get('view_count')
-                            }
-                            videos.append(video_data)
-                            count += 1
-                            print(f"  ✓ Fetched: {title}")
+                                print(f"  ℹ️ Using basic info for: {title} (Full info skipped)")
                         except Exception as e:
-                            print(f"  ✗ Error fetching video {video_id}: {e}")
-                            continue
+                            # If blocked, we still have the basic info from the entry!
+                            print(f"  ℹ️ Using basic info for: {title} (Individual fetch skipped: bot detection or error)")
+
+                        video_data = {
+                            'source_type': 'youtube',
+                            'opinion_leader': opinion_leader_name,
+                            'title': title,
+                            'url': video_url,
+                            'thumbnail': thumbnail_url,
+                            'description': description,
+                            'published_at': datetime.datetime.now().isoformat(),
+                            'original_id': video_id,
+                            'view_count': view_count
+                        }
+                        videos.append(video_data)
+                        count += 1
                         
         except Exception as e:
             print(f"Error crawling {channel_url}: {e}")

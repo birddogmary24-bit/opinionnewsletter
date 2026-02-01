@@ -74,13 +74,23 @@ def run_crawlers():
         # Create a unique ID based on source and original ID to prevent duplicates
         doc_id = f"{item['source_type']}_{item['original_id']}"
         
-        # Add metadata
-        item['scraped_at'] = datetime.datetime.now()
+        # Check if exists first to preserve discovery date (scraped_at)
+        doc_ref = collection_ref.document(doc_id)
+        doc_snapshot = doc_ref.get()
         
-        # Save (using set with merge=True to update if exists)
-        collection_ref.document(doc_id).set(item, merge=True)
-        print(f"   - Saved: {item['title']}")
-        saved_count += 1
+        if doc_snapshot.exists:
+            # Update only dynamic fields, preserve scraped_at
+            print(f"   - Updating views for: {item['title']}")
+            doc_ref.update({
+                'view_count': item.get('view_count'),
+                'description': item.get('description') # Update description if it was improved
+            })
+        else:
+            # New Discovery
+            item['scraped_at'] = datetime.datetime.now()
+            doc_ref.set(item)
+            print(f"   - Newly Discovered: {item['title']}")
+            saved_count += 1
         
     print(f"✅ Job Complete. {saved_count} items processed.")
 
