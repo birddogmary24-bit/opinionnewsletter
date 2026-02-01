@@ -235,40 +235,37 @@ export default function Home() {
                             {/* Top Contents Grid - Visual Focus */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
                                 {topContents.map((item) => (
-                                    <article key={item.id} className="group bg-slate-900/50 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10">
-                                        {item.thumbnail && (
-                                            <div className="relative aspect-video overflow-hidden bg-slate-800">
-                                                <img
-                                                    src={item.thumbnail}
-                                                    alt={item.title}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                />
-                                                <div className="absolute top-4 left-4 bg-slate-950/90 backdrop-blur text-white text-[10px] font-black px-3 py-1 rounded-full border border-white/10 shadow-2xl">
-                                                    {item.opinion_leader}
+                                    <a
+                                        key={item.id}
+                                        href={item.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => trackClick(item.url, 'web_top')}
+                                        className="group bg-slate-900/50 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 block"
+                                    >
+                                        <article>
+                                            {item.thumbnail && (
+                                                <div className="relative aspect-video overflow-hidden bg-slate-800">
+                                                    <img
+                                                        src={item.thumbnail}
+                                                        alt={item.title}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    />
+                                                    <div className="absolute top-4 left-4 bg-slate-950/90 backdrop-blur text-white text-[10px] font-black px-3 py-1 rounded-full border border-white/10 shadow-2xl">
+                                                        {item.opinion_leader}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="p-8 text-left">
+                                                <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors">
+                                                    {item.title}
+                                                </h3>
+                                                <div className="text-[10px] font-bold text-slate-500">
+                                                    {item.view_count ? `조회수 ${item.view_count.toLocaleString()}` : '조회수 없음'}
                                                 </div>
                                             </div>
-                                        )}
-                                        <div className="p-8 text-left">
-                                            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors">
-                                                {item.title}
-                                            </h3>
-                                            <div className="text-[10px] font-bold text-slate-500 mb-4">
-                                                {item.view_count ? `조회수 ${item.view_count.toLocaleString()}` : '조회수 없음'}
-                                            </div>
-                                            <a
-                                                href={item.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={() => trackClick(item.url, 'web_top')}
-                                                className="group/btn inline-flex items-center text-xs font-black text-blue-400 hover:text-white uppercase tracking-widest transition-all"
-                                            >
-                                                원문 리포트 읽기
-                                                <div className="ml-2 w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center group-hover/btn:bg-blue-500 group-hover/btn:text-white transition-all">
-                                                    <ExternalLink className="w-3 h-3" />
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </article>
+                                        </article>
+                                    </a>
                                 ))}
                             </div>
 
@@ -296,48 +293,45 @@ export default function Home() {
 
                                 <div className="space-y-6">
                                     {filteredRemaining.map((item) => (
-                                        <article key={item.id} className="group bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 md:p-8 hover:border-white/10 transition-all duration-300 hover:bg-slate-900/80 text-left">
-                                            <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6 md:gap-10">
-                                                {item.thumbnail && (
-                                                    <div className="w-full md:w-[280px] aspect-video flex-shrink-0 rounded-2xl overflow-hidden bg-slate-800 shadow-2xl relative">
-                                                        <img
-                                                            src={item.thumbnail}
-                                                            alt={item.title}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <div className="flex-1">
-                                                    <div className="flex items-center flex-wrap gap-4 mb-4">
-                                                        <span className="text-[10px] md:text-xs font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                                                            {item.opinion_leader}
-                                                        </span>
-                                                        <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
-                                                            <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-                                                            {item.scraped_at ? new Date(item.scraped_at).toLocaleDateString('ko-KR') : '-'}
-                                                        </span>
-                                                    </div>
-                                                    <h3 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors leading-tight tracking-tight">
-                                                        {item.title}
-                                                    </h3>
-                                                    <div className="text-xs font-bold text-slate-500 mb-5">
-                                                        {item.view_count ? `조회수 ${item.view_count.toLocaleString()}` : '조회수 없음'}
-                                                    </div>
-                                                    <a
-                                                        href={item.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        onClick={() => trackClick(item.url, 'web_category')}
-                                                        className="group/link inline-flex items-center text-xs font-black text-blue-400 hover:text-white uppercase tracking-widest transition-all"
-                                                    >
-                                                        상세 리포트 보기
-                                                        <div className="ml-3 p-1 rounded-full border border-blue-500/30 group-hover/link:border-white transition-colors">
-                                                            <ExternalLink className="w-3.5 h-3.5" />
+                                        <a
+                                            key={item.id}
+                                            href={item.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={() => trackClick(item.url, 'web_category')}
+                                            className="group bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 md:p-8 hover:border-white/10 transition-all duration-300 hover:bg-slate-900/80 text-left block"
+                                        >
+                                            <article>
+                                                <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6 md:gap-10">
+                                                    {item.thumbnail && (
+                                                        <div className="w-full md:w-[280px] aspect-video flex-shrink-0 rounded-2xl overflow-hidden bg-slate-800 shadow-2xl relative">
+                                                            <img
+                                                                src={item.thumbnail}
+                                                                alt={item.title}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                            />
                                                         </div>
-                                                    </a>
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center flex-wrap gap-4 mb-4">
+                                                            <span className="text-[10px] md:text-xs font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                                                                {item.opinion_leader}
+                                                            </span>
+                                                            <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
+                                                                <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                                                                {item.scraped_at ? new Date(item.scraped_at).toLocaleDateString('ko-KR') : '-'}
+                                                            </span>
+                                                        </div>
+                                                        <h3 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors leading-tight tracking-tight">
+                                                            {item.title}
+                                                        </h3>
+                                                        <div className="text-xs font-bold text-slate-500">
+                                                            {item.view_count ? `조회수 ${item.view_count.toLocaleString()}` : '조회수 없음'}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </article>
+                                            </article>
+                                        </a>
                                     ))}
                                 </div>
                             </div>
