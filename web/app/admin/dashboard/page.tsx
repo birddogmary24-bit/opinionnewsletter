@@ -19,9 +19,9 @@ interface MailLog {
     recipient_count: number;
     status: string;
     simulated?: boolean;
-    open_count?: number; // UV
-    email_pv?: number;   // Total PV
-    click_count?: number;
+    open_count: number; // UV
+    email_pv: number;   // Total PV
+    click_count: number;
 }
 
 interface WebStat {
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
     const [sending, setSending] = useState(false);
     const [stats, setStats] = useState({ total: 0, active: 0 });
     const [quota, setQuota] = useState<Quota | null>(null);
-    const [activeTab, setActiveTab] = useState<'subscribers' | 'stats' | 'history'>('stats');
+    const [activeTab, setActiveTab] = useState<'subscribers' | 'stats' | 'history' | 'analytics'>('subscribers');
     const router = useRouter();
 
     useEffect(() => {
@@ -219,6 +219,7 @@ export default function AdminDashboard() {
                         <nav className="hidden md:flex space-x-1">
                             {[
                                 { id: 'stats', label: '발송 통계', icon: BarChart3 },
+                                { id: 'analytics', label: '성과 분석', icon: CheckCircle },
                                 { id: 'subscribers', label: '구독자 목록', icon: Users },
                                 { id: 'history', label: '발송 이력', icon: History }
                             ].map(tab => (
@@ -609,6 +610,95 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
+                {activeTab === 'analytics' && (
+                    <div className="space-y-10">
+                        {/* Email Campaign Performance */}
+                        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden">
+                            <div className="px-8 py-6 border-b border-white/5 bg-white/5 font-black text-lg flex items-center gap-3">
+                                <Mail className="w-5 h-5 text-blue-400" />
+                                뉴스레터 캠페인 성과
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                                            <th className="px-8 py-5">캠페인 일시</th>
+                                            <th className="px-8 py-5">수신자</th>
+                                            <th className="px-8 py-5">개봉 (UV/PV)</th>
+                                            <th className="px-8 py-5">클릭</th>
+                                            <th className="px-8 py-5">개봉률</th>
+                                            <th className="px-8 py-5 text-right">클릭률(CTR)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5 text-sm">
+                                        {history.filter(h => h.type === 'all').length === 0 ? (
+                                            <tr><td colSpan={6} className="px-8 py-10 text-center text-slate-500">데이터가 없습니다.</td></tr>
+                                        ) : (
+                                            history.filter(h => h.type === 'all').map((log) => (
+                                                <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
+                                                    <td className="px-8 py-5 text-slate-300 font-medium">{formatDate(log.sent_at)}</td>
+                                                    <td className="px-8 py-5 font-bold">{log.recipient_count}명</td>
+                                                    <td className="px-8 py-5">
+                                                        <span className="text-blue-400 font-bold">{log.open_count}</span>
+                                                        <span className="text-slate-500 text-xs ml-1">/ {log.email_pv}</span>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-slate-300 font-bold">{log.click_count}</td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-12 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-blue-500" style={{ width: `${Math.round((log.open_count / log.recipient_count) * 100)}%` }}></div>
+                                                            </div>
+                                                            <span className="font-black text-blue-400">{Math.round((log.open_count / log.recipient_count) * 100)}%</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-right font-black text-purple-400">
+                                                        {Math.round((log.click_count / log.recipient_count) * 1000) / 10}%
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Web Traffic Stats */}
+                        <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden">
+                            <div className="px-8 py-6 border-b border-white/5 bg-white/5 font-black text-lg flex items-center gap-3">
+                                <BarChart3 className="w-5 h-5 text-green-400" />
+                                웹사이트 유입 및 활동 (최근 30일)
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                                            <th className="px-8 py-5">날짜</th>
+                                            <th className="px-8 py-5">페이지 뷰 (PV)</th>
+                                            <th className="px-8 py-5">콘텐츠 클릭</th>
+                                            <th className="px-8 py-5 text-right">전환율</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5 text-sm">
+                                        {Object.keys(webStats).length === 0 ? (
+                                            <tr><td colSpan={4} className="px-8 py-10 text-center text-slate-500">수집된 로그가 없습니다.</td></tr>
+                                        ) : (
+                                            Object.keys(webStats).sort().reverse().map(date => (
+                                                <tr key={date} className="hover:bg-white/[0.02] transition-colors">
+                                                    <td className="px-8 py-5 text-slate-300 font-bold">{date}</td>
+                                                    <td className="px-8 py-5 text-white font-black">{webStats[date].pv.toLocaleString()}</td>
+                                                    <td className="px-8 py-5 text-green-400 font-black">{webStats[date].clicks.toLocaleString()}</td>
+                                                    <td className="px-8 py-5 text-right font-black text-slate-500">
+                                                        {webStats[date].pv > 0 ? Math.round((webStats[date].clicks / webStats[date].pv) * 100) : 0}%
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {activeTab === 'history' && (
                     <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/5 overflow-hidden">
                         <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/5">
