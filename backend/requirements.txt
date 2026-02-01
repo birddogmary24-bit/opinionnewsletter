@@ -6,4 +6,5 @@ google-cloud-scheduler
 pycryptodome
 python-dotenv
 yt-dlp
+google-cloud-translate
 jinja2

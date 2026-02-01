@@ -39,8 +39,9 @@ def decrypt_email(encrypted_str):
         print(f"Decryption error: {e}")
         return None
 
-def run_newsletter_job():
-    print("🚀 Starting Newsletter Delivery Job...")
+def run_newsletter_job(is_production=False):
+    mode_text = "PRODUCTION" if is_production else "TEST MODE (Test Group Only)"
+    print(f"🚀 Starting Newsletter Delivery Job [{mode_text}]...")
     db = get_db()
     
     # 1. Fetch Latest Content (Within 48 hours to ensure enough content)
@@ -82,15 +83,20 @@ def run_newsletter_job():
     }
 
     # 2. Fetch Active Subscribers
-    print("Fetching subscribers...")
+    print(f"Fetching {'production' if is_production else 'test'} subscribers...")
     subs_docs = db.collection('subscribers').where('status', '==', 'active').stream()
     recipients = []
     
     for doc in subs_docs:
         data = doc.to_dict()
+        is_test_user = data.get('is_test') == True
         
-        # Skip test subscribers for the automatic daily job
-        if data.get('is_test') == True:
+        # In production mode, skip test users
+        if is_production and is_test_user:
+            continue
+        
+        # In test mode, skip production users
+        if not is_production and not is_test_user:
             continue
             
         enc_email = data.get('email')
@@ -105,12 +111,16 @@ def run_newsletter_job():
     
     recipients = list(set(recipients)) # Deduplicate
     
+    if not recipients:
+        print(f"ℹ️ No {'production' if is_production else 'test'} recipients found. Job skipped.")
+        return
+
     print(f"📧 Found {len(recipients)} recipients.")
     
     # 3. Create mail_history entry first to get mail_id
     mail_history_ref = db.collection('mail_history').add({
         'sent_at': datetime.datetime.now().isoformat(),
-        'type': 'all',
+        'type': 'production' if is_production else 'test_job',
         'recipient_count': len(recipients),
         'status': 'success',
         'simulated': False,
@@ -125,7 +135,9 @@ def run_newsletter_job():
     email_service = EmailService()
     email_service.send_newsletter(recipients, newsletter_data, mail_id=mail_id)
     
-    print("✅ Newsletter Job Complete.")
+    print(f"✅ Newsletter Job [{mode_text}] Complete.")
 
 if __name__ == "__main__":
-    run_newsletter_job()
+    # Check for --production flag
+    is_prod = "--production" in sys.argv
+    run_newsletter_job(is_production=is_prod)
