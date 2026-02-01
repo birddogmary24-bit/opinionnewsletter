@@ -33,8 +33,8 @@ class EmailService:
         template = self.jinja_env.get_template('email_daily.html')
         date_str = datetime.datetime.now().strftime('%Y.%m.%d')
         
-        # Base URL for tracking (Seoul region)
-        base_tracking_url = "https://opinionnewsletter-web-810426728503.asia-northeast3.run.app"
+        # Base URL for tracking (Original region)
+        base_tracking_url = "https://opinion-newsletter-web-810426728503.us-central1.run.app"
         
         return template.render(
             contents=contents, 

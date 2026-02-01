@@ -58,7 +58,7 @@
 
 ## 5. 배포 상태 (Deployment Status)
 - **상태:** **Production Ready / 배포 완료**
-- **클라우드 계정:** GCP (`birddogmary24@gmail.com`)
+- **클라우드 계정:** GCP (관리자 계정)
 - **Git Repo:** 최신 UI 및 큐레이션 로직 (24h 필터, 30개 제한, 조회수 기반 Top 3) 반영 완료.
 - **CI/CD:** Cloud Run (GCP CLI)을 통한 수동 배포 프로세스.
 

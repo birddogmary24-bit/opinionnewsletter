@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 import Handlebars from 'handlebars';
+import crypto from 'crypto';
 
 // Register Handlebars helpers
 Handlebars.registerHelper('encodeURL', function (url: string) {
@@ -67,7 +68,8 @@ export async function POST(request: Request) {
             recipient_count: recipients.length,
             status: 'success',
             simulated: !process.env.GMAIL_USER,
-            open_count: 0,      // Initialize tracking counters
+            open_count: 0,      // Unique Opens (UV)
+            email_pv: 0,        // Total Page Views (PV)
             click_count: 0,     // Initialize tracking counters
         });
 
@@ -113,18 +115,6 @@ export async function POST(request: Request) {
         const templateSource = fs.readFileSync(templatePath, 'utf-8');
         const template = Handlebars.compile(templateSource);
 
-        const trackingUrl = 'https://opinionnewsletter-web-810426728503.asia-northeast3.run.app';
-
-        const htmlContent = template({
-            contents: {
-                top_stories: topStories,
-                category_stories: categoryStories
-            },
-            mailId,
-            trackingUrl,
-            date_str: new Date().toLocaleDateString('ko-KR')
-        });
-
         // 8. Send Emails
         // If no credentials are set, we simulate
         if (!process.env.GMAIL_USER) {
@@ -137,12 +127,28 @@ export async function POST(request: Request) {
         const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
         const subjectDate = `${kstDate.getMonth() + 1}/${kstDate.getDate()}`;
 
+        const trackingUrl = 'https://opinion-newsletter-web-810426728503.us-central1.run.app';
+
         const promises = recipients.map(to => {
+            // Generate unique SID for this recipient (hashed email)
+            const sid = crypto.createHash('md5').update(to.toLowerCase()).digest('hex');
+
+            const personalizedHtml = template({
+                contents: {
+                    top_stories: topStories,
+                    category_stories: categoryStories
+                },
+                mailId,
+                sid,
+                trackingUrl,
+                date_str: new Date().toLocaleDateString('ko-KR')
+            });
+
             return transporter.sendMail({
                 from: `"오뉴 뉴스레터" <${process.env.GMAIL_USER}>`,
                 to,
                 subject: `오뉴 - 오늘의 오피니언 뉴스 [${subjectDate}]`,
-                html: htmlContent,
+                html: personalizedHtml,
             });
         });
 

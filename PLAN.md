@@ -33,7 +33,7 @@
     - "Opinion Leaders" showcase (Grid/Carousel).
     - Subscription Form (Input validation -> API call -> Firestore).
 3.  **Admin Panel (`/admin`):**
-    - Login screen (`opinion2026`).
+    - Login screen (관리자 인증).
     - Dashboard:
         - "Send Test Email" button.
         - Subscriber List (Table with Add/Delete).
