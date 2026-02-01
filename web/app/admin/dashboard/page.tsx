@@ -448,19 +448,19 @@ export default function AdminDashboard() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/5">
-                                            <th className="px-8 py-5 border-r border-white/5">날짜</th>
-                                            <th className="px-8 py-5 bg-blue-500/5" colSpan={4}>📧 뉴스레터 발송 및 추적</th>
-                                            <th className="px-8 py-5 bg-purple-500/5" colSpan={2}>🌐 웹 사이트(홈) 통계</th>
+                                        <tr className="bg-slate-950/70 text-slate-100 text-xs font-black uppercase tracking-[0.2em] border-b border-white/10">
+                                            <th className="px-8 py-6 border-r border-white/10 italic text-slate-400">날짜</th>
+                                            <th className="px-8 py-6 bg-blue-500/10 text-blue-100" colSpan={4}>📧 뉴스레터 발송 및 추적</th>
+                                            <th className="px-8 py-6 bg-purple-500/10 text-purple-100" colSpan={2}>🌐 웹 사이트(홈) 통계</th>
                                         </tr>
-                                        <tr className="bg-slate-950/30 text-slate-500 text-[9px] font-black uppercase tracking-widest border-b border-white/5">
-                                            <th className="px-8 py-3 border-r border-white/5"></th>
-                                            <th className="px-6 py-3 bg-blue-500/5">발송량</th>
-                                            <th className="px-6 py-3 bg-blue-500/5">이메일 조회(PV)</th>
-                                            <th className="px-6 py-3 bg-blue-500/5">오픈(UV/율)</th>
-                                            <th className="px-6 py-3 bg-blue-500/5">클릭(수/율)</th>
-                                            <th className="px-6 py-3 bg-purple-500/5">홈 PV</th>
-                                            <th className="px-6 py-3 bg-purple-500/5">홈 클릭</th>
+                                        <tr className="bg-slate-950/50 text-slate-300 text-[11px] font-black uppercase tracking-widest border-b border-white/5">
+                                            <th className="px-8 py-4 border-r border-white/5"></th>
+                                            <th className="px-6 py-4 bg-blue-500/5">발송량</th>
+                                            <th className="px-6 py-4 bg-blue-500/5">이메일 조회(PV)</th>
+                                            <th className="px-6 py-4 bg-blue-500/5">오픈(UV/율)</th>
+                                            <th className="px-6 py-4 bg-blue-500/5">클릭(수/율)</th>
+                                            <th className="px-6 py-4 bg-purple-500/5">홈 PV</th>
+                                            <th className="px-6 py-4 bg-purple-500/5">홈 클릭</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-sm">
@@ -516,42 +516,42 @@ export default function AdminDashboard() {
                                                             {/* NewsLetter Columns */}
                                                             <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="font-black text-white">{totalRecipients.toLocaleString()}</span>
-                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">건</span>
+                                                                    <span className="text-base font-black text-white">{totalRecipients.toLocaleString()}</span>
+                                                                    <span className="text-xs text-slate-400 uppercase font-black">건</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
+                                                            <td className="px-6 py-6 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="font-bold text-slate-300">{totalEmailPV.toLocaleString()}</span>
-                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">회</span>
+                                                                    <span className="text-base font-bold text-slate-100">{totalEmailPV.toLocaleString()}</span>
+                                                                    <span className="text-xs text-slate-400 uppercase font-black">회</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
+                                                            <td className="px-6 py-6 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
                                                                 <div className="space-y-1">
-                                                                    <div className="font-bold text-blue-400">{totalOpensUV.toLocaleString()}회</div>
-                                                                    <div className="text-[10px] font-black text-blue-500/50">{openRate}%</div>
+                                                                    <div className="text-base font-bold text-blue-300">{totalOpensUV.toLocaleString()}회</div>
+                                                                    <div className="text-xs font-black text-blue-400/80">{openRate}%</div>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
+                                                            <td className="px-6 py-6 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
                                                                 <div className="space-y-1">
-                                                                    <div className="font-bold text-green-400">{totalClicks.toLocaleString()}회</div>
-                                                                    <div className="text-[10px] font-black text-green-500/50">{clickRate}%</div>
+                                                                    <div className="text-base font-bold text-green-300">{totalClicks.toLocaleString()}회</div>
+                                                                    <div className="text-xs font-black text-green-400/80">{clickRate}%</div>
                                                                 </div>
                                                             </td>
 
                                                             {/* Web Stats Columns */}
-                                                            <td className="px-6 py-5 bg-purple-500/[0.02] group-hover:bg-purple-500/[0.05]">
+                                                            <td className="px-6 py-6 bg-purple-500/[0.02] group-hover:bg-purple-500/[0.05]">
                                                                 <div className="flex items-center gap-2">
-                                                                    <Layout className="w-3 h-3 text-purple-400" />
-                                                                    <span className="font-bold text-pink-400">{ws.pv.toLocaleString()}</span>
-                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">PV</span>
+                                                                    <Layout className="w-4 h-4 text-purple-300" />
+                                                                    <span className="text-base font-bold text-pink-300">{ws.pv.toLocaleString()}</span>
+                                                                    <span className="text-xs text-slate-400 uppercase font-black">PV</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-5 bg-purple-500/[0.02] group-hover:bg-purple-500/[0.05]">
+                                                            <td className="px-6 py-6 bg-purple-500/[0.02] group-hover:bg-purple-500/[0.05]">
                                                                 <div className="flex items-center gap-2">
-                                                                    <MousePointer2 className="w-3 h-3 text-purple-400" />
-                                                                    <span className="font-bold text-amber-400">{ws.clicks.toLocaleString()}</span>
-                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">클릭</span>
+                                                                    <MousePointer2 className="w-4 h-4 text-purple-300" />
+                                                                    <span className="text-base font-bold text-amber-300">{ws.clicks.toLocaleString()}</span>
+                                                                    <span className="text-xs text-slate-400 uppercase font-black">클릭</span>
                                                                 </div>
                                                             </td>
                                                         </tr>
