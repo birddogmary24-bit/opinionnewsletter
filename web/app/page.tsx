@@ -135,6 +135,12 @@ export default function Home() {
                         </span>
                     </div>
 
+                    <div className="mb-4">
+                        <span className="text-4xl md:text-6xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent px-1 block mb-2" style={{ fontFamily: 'Pretendard, sans-serif' }}>
+                            오뉴
+                        </span>
+                    </div>
+
                     <h1 className="text-3xl md:text-5xl font-black mb-6 leading-tight tracking-tight italic">
                         <span className="text-white">진짜를 보는 </span>{" "}
                         <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent px-1">
