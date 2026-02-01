@@ -139,10 +139,22 @@ export default function AdminDashboard() {
 
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('ko-KR', {
+        // Handle both ISO strings with Z and without Z (KST from backend)
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ko-KR', {
             year: 'numeric', month: 'long', day: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
+    };
+
+    const getKSTDatePart = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        // Add 9 hours for KST offset if the date is UTC (ends with Z or has no offset info)
+        // If it's already a KST string without Z, new Date() might handle it differently.
+        // Let's be explicit.
+        const kstDate = new Date(date.getTime() + (date.getTimezoneOffset() === 0 ? 9 * 60 * 60 * 1000 : 0));
+        return kstDate.toISOString().split('T')[0];
     };
 
     const calculateAverageOpenRate = () => {
@@ -451,11 +463,19 @@ export default function AdminDashboard() {
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-sm">
                                         {(() => {
+                                            const kstOffset = 9 * 60 * 60 * 1000;
+
                                             // Process all dates from both history and webStats
                                             const allDates = new Set([
-                                                ...history.filter(log => log.status === 'success' && !log.simulated).map(log =>
-                                                    log.sent_at ? log.sent_at.split('T')[0] : ''
-                                                ).filter(Boolean),
+                                                ...history.filter(log => log.status === 'success' && !log.simulated).map(log => {
+                                                    if (!log.sent_at) return '';
+                                                    const d = new Date(log.sent_at);
+                                                    // If it doesn't have Z, it might be local KST already or UTC. 
+                                                    // Check if it's likely KST (no Z) or UTC (Z)
+                                                    const isNativeUTC = log.sent_at.endsWith('Z');
+                                                    const kstDate = isNativeUTC ? new Date(d.getTime() + kstOffset) : d;
+                                                    return kstDate.toISOString().split('T')[0];
+                                                }).filter(Boolean),
                                                 ...Object.keys(webStats)
                                             ]);
 
@@ -467,12 +487,14 @@ export default function AdminDashboard() {
                                                 <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-500 font-bold italic">통계 데이터가 없습니다.</td></tr>
                                             ) : (
                                                 sortedDates.map((date) => {
-                                                    // Aggregate mail stats for this date
-                                                    const dayLogs = history.filter(log =>
-                                                        log.sent_at?.startsWith(date) &&
-                                                        log.status === 'success' &&
-                                                        !log.simulated
-                                                    );
+                                                    // Aggregate mail stats for this date (KST)
+                                                    const dayLogs = history.filter(log => {
+                                                        if (!log.sent_at || log.status !== 'success' || log.simulated) return false;
+                                                        const d = new Date(log.sent_at);
+                                                        const isNativeUTC = log.sent_at.endsWith('Z');
+                                                        const kstDate = isNativeUTC ? new Date(d.getTime() + kstOffset) : d;
+                                                        return kstDate.toISOString().split('T')[0] === date;
+                                                    });
 
                                                     const totalRecipients = dayLogs.reduce((sum, log) => sum + (log.recipient_count || 0), 0);
                                                     const totalOpens = dayLogs.reduce((sum, log) => sum + (log.open_count || 0), 0);
