@@ -17,6 +17,7 @@ export async function POST(request: Request) {
         await db.collection('subscribers').add({
             email: encryptedEmail,
             status: 'active',
+            is_test: false,
             created_at: new Date(),
             source: 'web_landing'
         });

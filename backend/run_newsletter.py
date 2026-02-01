@@ -88,6 +88,11 @@ def run_newsletter_job():
     
     for doc in subs_docs:
         data = doc.to_dict()
+        
+        # Skip test subscribers for the automatic daily job
+        if data.get('is_test') == True:
+            continue
+            
         enc_email = data.get('email')
         if enc_email:
             email = decrypt_email(enc_email)
@@ -97,9 +102,6 @@ def run_newsletter_job():
                 # If decryption fails (maybe plaintext for testing), check
                 if '@' in enc_email:
                     recipients.append(enc_email)
-    
-    # Add dummy test email if list is empty for safety during test
-    recipients.append('birddogmary24@gmail.com') 
     
     recipients = list(set(recipients)) # Deduplicate
     

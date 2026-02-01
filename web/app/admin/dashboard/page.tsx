@@ -10,6 +10,7 @@ interface Subscriber {
     email: string;
     created_at: string;
     status: string;
+    is_test?: boolean;
 }
 
 interface MailLog {
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
     const [chartData, setChartData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
-    const [stats, setStats] = useState({ total: 0, active: 0 });
+    const [stats, setStats] = useState({ total: 0, active: 0, test: 0, production: 0 });
     const [quota, setQuota] = useState<Quota | null>(null);
     const [activeTab, setActiveTab] = useState<'subscribers' | 'stats' | 'history' | 'analytics'>('subscribers');
     const router = useRouter();
@@ -69,7 +70,9 @@ export default function AdminDashboard() {
                 setSubscribers(data.subscribers);
                 setStats({
                     total: data.subscribers.length,
-                    active: data.subscribers.filter((s: any) => s.status === 'active').length
+                    active: data.subscribers.filter((s: any) => s.status === 'active').length,
+                    test: data.subscribers.filter((s: any) => s.is_test).length,
+                    production: data.subscribers.filter((s: any) => !s.is_test).length
                 });
             }
         } catch (error) {
@@ -90,15 +93,21 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleSend = async (type: 'all' | 'individual', subscriberId?: string) => {
-        if (!confirm(type === 'all' ? '전체 구독자에게 뉴스레터를 발송하시겠습니까?' : '이 구독자에게 뉴스레터를 발송하시겠습니까?')) return;
+    const handleSend = async (type: 'all' | 'individual' | 'group', targetGroup?: 'test' | 'production', subscriberId?: string) => {
+        let confirmMsg = '';
+        if (type === 'individual') confirmMsg = '이 구독자에게 테스트 메일을 발송하시겠습니까?';
+        else if (targetGroup === 'test') confirmMsg = '테스트 그룹 구독자들에게 뉴스레터를 발송하시겠습니까?';
+        else if (targetGroup === 'production') confirmMsg = '실제 운영 구독자들에게 뉴스레터를 발송하시겠습니까?';
+        else confirmMsg = '전체 구독자에게 뉴스레터를 발송하시겠습니까?';
+
+        if (!confirm(confirmMsg)) return;
 
         setSending(true);
         try {
             const res = await fetch('/api/admin/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, subscriberId }),
+                body: JSON.stringify({ type, subscriberId, targetGroup }),
             });
             const data = await res.json();
             if (data.success) {
@@ -111,6 +120,24 @@ export default function AdminDashboard() {
             alert('이메일 발송 중 오류가 발생했습니다.');
         } finally {
             setSending(false);
+        }
+    };
+
+    const handleToggleTest = async (subscriberId: string, currentStatus: boolean) => {
+        try {
+            const res = await fetch(`/api/admin/subscribers/${subscriberId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_test: !currentStatus }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchSubscribers();
+            } else {
+                alert('변경 실패: ' + data.message);
+            }
+        } catch (e) {
+            alert('변경 중 오류가 발생했습니다.');
         }
     };
 
@@ -295,19 +322,27 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     </div>
-                    <div className="lg:col-span-4">
-                        <div className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 backdrop-blur-xl p-8 rounded-[2rem] border border-blue-500/20 shadow-2xl h-full flex flex-col justify-center">
-                            <h3 className="text-white text-lg font-black mb-6 flex items-center gap-2">
-                                <SendHorizontal className="w-5 h-5 text-blue-400" />
-                                빠른 발송
-                            </h3>
+                    <div className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 backdrop-blur-xl p-8 rounded-[2rem] border border-blue-500/20 shadow-2xl h-full flex flex-col justify-center space-y-4">
+                        <h3 className="text-white text-lg font-black mb-2 flex items-center gap-2">
+                            <SendHorizontal className="w-5 h-5 text-blue-400" />
+                            빠른 발송
+                        </h3>
+                        <div className="grid grid-cols-1 gap-4">
                             <button
-                                onClick={() => handleSend('all')}
+                                onClick={() => handleSend('group', 'test')}
                                 disabled={sending}
-                                className="w-full bg-white text-slate-950 hover:bg-blue-50 px-6 py-5 rounded-2xl font-black transition-all duration-300 flex items-center justify-center shadow-xl shadow-white/5 active:scale-95 disabled:opacity-50"
+                                className="w-full bg-slate-100 text-slate-950 hover:bg-white px-6 py-4 rounded-2xl font-black transition-all duration-300 flex items-center justify-center shadow-xl active:scale-95 disabled:opacity-50"
                             >
-                                {sending ? <Loader2 className="w-6 h-6 animate-spin" /> : <Mail className="w-6 h-6 mr-3" />}
-                                전체 뉴스레터 발송 ({stats.active}명)
+                                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5 mr-3" />}
+                                테스트 그룹 발송 ({stats.test}명)
+                            </button>
+                            <button
+                                onClick={() => handleSend('group', 'production')}
+                                disabled={sending}
+                                className="w-full bg-blue-600 text-white hover:bg-blue-500 px-6 py-4 rounded-2xl font-black transition-all duration-300 flex items-center justify-center shadow-xl active:scale-95 disabled:opacity-50"
+                            >
+                                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <SendHorizontal className="w-5 h-5 mr-3" />}
+                                실제 운영 발송 ({stats.active - stats.test}명)
                             </button>
                         </div>
                     </div>
@@ -346,23 +381,36 @@ export default function AdminDashboard() {
                                         subscribers.map((sub) => (
                                             <tr key={sub.id} className="hover:bg-white/[0.02] transition-colors group">
                                                 <td className="px-8 py-5 text-sm font-bold text-slate-200 font-mono">
-                                                    {sub.email}
+                                                    <div className="flex items-center gap-3">
+                                                        {sub.email}
+                                                        {sub.is_test && (
+                                                            <span className="bg-slate-500/20 text-slate-400 text-[9px] px-2 py-0.5 rounded border border-slate-500/30">TEST</span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-8 py-5 text-xs font-medium text-slate-500">
                                                     {formatDate(sub.created_at)}
                                                 </td>
                                                 <td className="px-8 py-5">
-                                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${sub.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
-                                                        {sub.status === 'active' ? 'ACTIVE' : 'INACTIVE'}
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${sub.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
+                                                            {sub.status === 'active' ? 'ACTIVE' : 'INACTIVE'}
+                                                        </span>
+                                                    </div>
                                                 </td>
-                                                <td className="px-8 py-5 text-right space-x-3">
+                                                <td className="px-8 py-5 text-right space-x-2">
                                                     <button
-                                                        onClick={() => handleSend('individual', sub.id)}
-                                                        disabled={sending}
-                                                        className="text-blue-400 hover:text-white text-xs font-black transition-all border border-blue-500/30 bg-blue-500/5 px-4 py-2 rounded-xl hover:bg-blue-500 active:scale-95"
+                                                        onClick={() => handleToggleTest(sub.id, !!sub.is_test)}
+                                                        className={`text-[10px] font-black px-3 py-1.5 rounded-lg border transition-all ${sub.is_test ? 'bg-amber-500/10 text-amber-500 border-amber-500/30 hover:bg-amber-500/20' : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'}`}
                                                     >
-                                                        메일 발송
+                                                        {sub.is_test ? '운영용으로' : '테스트용으로'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleSend('individual', undefined, sub.id)}
+                                                        disabled={sending}
+                                                        className="text-blue-400 hover:text-white text-xs font-black transition-all border border-blue-500/30 bg-blue-500/5 px-4 py-1.5 rounded-lg hover:bg-blue-500 active:scale-95"
+                                                    >
+                                                        개별 발송
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(sub.id)}

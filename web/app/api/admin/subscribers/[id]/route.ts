@@ -29,3 +29,30 @@ export async function DELETE(
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const cookieStore = await cookies();
+        const session = cookieStore.get('admin_session');
+
+        if (session?.value !== 'authenticated') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const resolvedParams = await params;
+        const id = resolvedParams.id;
+        const body = await request.json();
+        const { is_test } = body;
+
+        await db.collection('subscribers').doc(id).update({
+            is_test: is_test === true
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error updating subscriber:", error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { type, subscriberId } = body; // type: 'all' | 'individual'
+        const { type, subscriberId, targetGroup } = body; // type: 'all' | 'individual' | 'group', targetGroup: 'test' | 'production' | 'all'
 
         // 2. Fetch Content (최대 30개, 24시간 이내 데이터)
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -49,11 +49,21 @@ export async function POST(request: Request) {
                 const dec = decryptEmail(subDoc.data()?.email);
                 if (dec) recipients.push(dec);
             }
-        } else if (type === 'all') {
+        } else if (type === 'group' || type === 'all') {
             const subSnapshot = await db.collection('subscribers').where('status', '==', 'active').get();
             subSnapshot.docs.forEach(doc => {
-                const dec = decryptEmail(doc.data().email);
-                if (dec) recipients.push(dec);
+                const data = doc.data();
+                const isTest = data.is_test === true;
+
+                let shouldAdd = false;
+                if (targetGroup === 'test' && isTest) shouldAdd = true;
+                else if (targetGroup === 'production' && !isTest) shouldAdd = true;
+                else if (!targetGroup || targetGroup === 'all') shouldAdd = true;
+
+                if (shouldAdd) {
+                    const dec = decryptEmail(data.email);
+                    if (dec) recipients.push(dec);
+                }
             });
         }
 
