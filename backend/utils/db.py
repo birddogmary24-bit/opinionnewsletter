@@ -14,12 +14,19 @@ def get_db():
     global _db_client
     if _db_client is None:
         try:
-            credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE)
-            _db_client = firestore.Client(
-                credentials=credentials, 
-                project=PROJECT_ID, 
-                database=DATABASE_ID
-            )
+            if os.path.exists(SERVICE_ACCOUNT_FILE):
+                credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE)
+                _db_client = firestore.Client(
+                    credentials=credentials, 
+                    project=PROJECT_ID, 
+                    database=DATABASE_ID
+                )
+            else:
+                # Use Application Default Credentials (ADC) when deployed to Cloud Run
+                _db_client = firestore.Client(
+                    project=PROJECT_ID, 
+                    database=DATABASE_ID
+                )
         except Exception as e:
             print(f"Error connecting to DB: {e}")
             raise e
