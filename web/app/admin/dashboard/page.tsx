@@ -19,7 +19,8 @@ interface MailLog {
     recipient_count: number;
     status: string;
     simulated?: boolean;
-    open_count?: number;
+    open_count?: number; // UV
+    email_pv?: number;   // Total PV
     click_count?: number;
 }
 
@@ -449,16 +450,17 @@ export default function AdminDashboard() {
                                     <thead>
                                         <tr className="bg-slate-950/50 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/5">
                                             <th className="px-8 py-5 border-r border-white/5">날짜</th>
-                                            <th className="px-8 py-5 bg-blue-500/5" colSpan={3}>📧 뉴스레터 발송 및 추적</th>
+                                            <th className="px-8 py-5 bg-blue-500/5" colSpan={4}>📧 뉴스레터 발송 및 추적</th>
                                             <th className="px-8 py-5 bg-purple-500/5" colSpan={2}>🌐 웹 사이트(홈) 통계</th>
                                         </tr>
                                         <tr className="bg-slate-950/30 text-slate-500 text-[9px] font-black uppercase tracking-widest border-b border-white/5">
                                             <th className="px-8 py-3 border-r border-white/5"></th>
                                             <th className="px-6 py-3 bg-blue-500/5">발송량</th>
-                                            <th className="px-6 py-3 bg-blue-500/5">오픈(율)</th>
-                                            <th className="px-6 py-3 bg-blue-500/5">클릭(율)</th>
-                                            <th className="px-6 py-3 bg-purple-500/5">페이지 뷰(PV)</th>
-                                            <th className="px-6 py-3 bg-purple-500/5">클릭 횟수</th>
+                                            <th className="px-6 py-3 bg-blue-500/5">이메일 조회(PV)</th>
+                                            <th className="px-6 py-3 bg-blue-500/5">오픈(UV/율)</th>
+                                            <th className="px-6 py-3 bg-blue-500/5">클릭(수/율)</th>
+                                            <th className="px-6 py-3 bg-purple-500/5">홈 PV</th>
+                                            <th className="px-6 py-3 bg-purple-500/5">홈 클릭</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-sm">
@@ -497,11 +499,12 @@ export default function AdminDashboard() {
                                                     });
 
                                                     const totalRecipients = dayLogs.reduce((sum, log) => sum + (log.recipient_count || 0), 0);
-                                                    const totalOpens = dayLogs.reduce((sum, log) => sum + (log.open_count || 0), 0);
+                                                    const totalEmailPV = dayLogs.reduce((sum, log) => sum + (log.email_pv || 0), 0);
+                                                    const totalOpensUV = dayLogs.reduce((sum, log) => sum + (log.open_count || 0), 0);
                                                     const totalClicks = dayLogs.reduce((sum, log) => sum + (log.click_count || 0), 0);
 
-                                                    const openRate = totalRecipients > 0 ? ((totalOpens / totalRecipients) * 100).toFixed(1) : '0.0';
-                                                    const clickRate = totalRecipients > 0 ? ((totalClicks / totalRecipients) * 100).toFixed(1) : '0.0';
+                                                    const openRate = totalRecipients > 0 ? ((totalOpensUV / totalRecipients) * 100).toFixed(1) : '0.0';
+                                                    const clickRate = totalOpensUV > 0 ? ((totalClicks / totalOpensUV) * 100).toFixed(1) : '0.0';
 
                                                     // Web stats
                                                     const ws = webStats[date] || { pv: 0, clicks: 0 };
@@ -518,8 +521,14 @@ export default function AdminDashboard() {
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-bold text-slate-300">{totalEmailPV.toLocaleString()}</span>
+                                                                    <span className="text-[10px] text-slate-500 uppercase font-black">회</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05]">
                                                                 <div className="space-y-1">
-                                                                    <div className="font-bold text-blue-400">{totalOpens.toLocaleString()}회</div>
+                                                                    <div className="font-bold text-blue-400">{totalOpensUV.toLocaleString()}회</div>
                                                                     <div className="text-[10px] font-black text-blue-500/50">{openRate}%</div>
                                                                 </div>
                                                             </td>

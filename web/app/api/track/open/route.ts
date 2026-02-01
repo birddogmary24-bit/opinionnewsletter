@@ -11,29 +11,36 @@ export async function GET(request: Request) {
             const ip = request.headers.get('x-forwarded-for') || 'unknown';
             const ua = request.headers.get('user-agent') || 'unknown';
 
-            // Simplified query to avoid index errors (only using mailId)
-            // We'll filter by IP/UA in JS
-            const recentOpens = await db.collection('tracking_events')
-                .where('mailId', '==', mailId)
-                .where('type', '==', 'open')
-                .limit(10) // Get last 10 (without order, but usually fine for recent)
-                .get();
-
-            let shouldTrack = true;
-            const now = Date.now();
-
-            recentOpens.docs.forEach(doc => {
-                const data = doc.data();
-                if (data.ip === ip && data.ua === ua && data.timestamp) {
-                    const lastTime = data.timestamp.toDate().getTime();
-                    if (now - lastTime < 3000) { // 3 second window
-                        shouldTrack = false;
-                    }
-                }
+            // 1. Always record Email PV (Page View for the Email)
+            await db.collection('tracking_events').add({
+                type: 'email_pv',
+                mailId,
+                ip,
+                ua,
+                timestamp: FieldValue.serverTimestamp(),
             });
 
-            if (shouldTrack) {
-                // 1. Log the open event in a detailed tracking collection
+            // Increment email_pv in mail_history
+            await db.collection('mail_history').doc(mailId).update({
+                email_pv: FieldValue.increment(1)
+            });
+
+            // 2. Check for Unique Open (UV) 
+            // We use a dedicated collection 'unique_opens' with a deterministic ID: mailId_hash(ip+ua)
+            // This avoids the need for composite indexes (where mailId=X and ip=Y)
+            const uvId = `${mailId}_${Buffer.from(ip + ua).toString('base64').substring(0, 50).replace(/\//g, '_')}`;
+            const uvRef = db.collection('unique_opens').doc(uvId);
+            const uvDoc = await uvRef.get();
+
+            if (!uvDoc.exists) {
+                // First time this IP/UA opens this mail
+                await uvRef.set({
+                    mailId,
+                    ip,
+                    timestamp: FieldValue.serverTimestamp(),
+                });
+
+                // Also log to tracking_events for history
                 await db.collection('tracking_events').add({
                     type: 'open',
                     mailId,
@@ -42,7 +49,7 @@ export async function GET(request: Request) {
                     timestamp: FieldValue.serverTimestamp(),
                 });
 
-                // 2. Increment the open_count in the mail_history
+                // Increment open_count (which now represents UV)
                 await db.collection('mail_history').doc(mailId).update({
                     open_count: FieldValue.increment(1)
                 });

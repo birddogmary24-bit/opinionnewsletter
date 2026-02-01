@@ -26,7 +26,8 @@ export async function GET() {
                 recipient_count: data.recipient_count,
                 status: data.status,
                 simulated: data.simulated,
-                open_count: data.open_count || 0,
+                open_count: data.open_count || 0, // UV
+                email_pv: data.email_pv || 0, // Total PV
                 click_count: data.click_count || 0,
             };
         });

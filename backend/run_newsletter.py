@@ -112,8 +112,9 @@ def run_newsletter_job():
         'recipient_count': len(recipients),
         'status': 'success',
         'simulated': False,
-        'open_count': 0,      # Initialize tracking counters
-        'click_count': 0      # Initialize tracking counters
+        'open_count': 0,      # Unique Opens (UV)
+        'email_pv': 0,        # Total Page Views (PV)
+        'click_count': 0      # Clicks
     })
     
     mail_id = mail_history_ref[1].id # Firestore .add returns (time, doc_ref)
