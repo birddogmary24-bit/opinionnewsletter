@@ -25,10 +25,14 @@ export async function GET(request: Request) {
                 email_pv: FieldValue.increment(1)
             });
 
+            const sid = searchParams.get('sid');
+
             // 2. Check for Unique Open (UV) 
-            // We use a dedicated collection 'unique_opens' with a deterministic ID: mailId_hash(ip+ua)
-            // This avoids the need for composite indexes (where mailId=X and ip=Y)
-            const uvId = `${mailId}_${Buffer.from(ip + ua).toString('base64').substring(0, 50).replace(/\//g, '_')}`;
+            // If sid (Subscriber ID) is provided, use it for a perfect UV.
+            // If not (e.g. legacy or web), fallback to IP+UA hash.
+            const identity = sid || Buffer.from(ip + ua).toString('base64').substring(0, 50).replace(/\//g, '_');
+            const uvId = `${mailId}_${identity}`;
+
             const uvRef = db.collection('unique_opens').doc(uvId);
             const uvDoc = await uvRef.get();
 

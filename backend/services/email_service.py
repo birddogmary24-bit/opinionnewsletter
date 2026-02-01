@@ -26,7 +26,7 @@ class EmailService:
         import urllib.parse
         self.jinja_env.filters['urlencode'] = urllib.parse.quote_plus
 
-    def render_template(self, contents, mail_id=None):
+    def render_template(self, contents, mail_id=None, sid=None):
         """
         Renders the newsletter HTML template with the given contents.
         """
@@ -40,6 +40,7 @@ class EmailService:
             contents=contents, 
             date_str=date_str, 
             mail_id=mail_id,
+            sid=sid,
             tracking_url=base_tracking_url
         )
 
@@ -55,7 +56,6 @@ class EmailService:
             print(f"   [Mock Send] Would have sent to {len(to_emails)} recipients.")
             return
 
-        html_content = self.render_template(contents, mail_id=mail_id)
         # Use KST timezone (UTC+9)
         import pytz
         kst = pytz.timezone('Asia/Seoul')
@@ -72,17 +72,25 @@ class EmailService:
             # To avoid spam flags, sending in batches is better. 
             # For MVP, let's just send one by one to ensure delivery in test.
             
+            import hashlib
+            
             for recipient in to_emails:
+                # Generate a unique SID for this recipient (hashed email)
+                sid = hashlib.md5(recipient.lower().encode()).hexdigest()
+                
+                # Render template specifically for THIS recipient with their SID
+                recipient_html = self.render_template(contents, mail_id=mail_id, sid=sid)
+                
                 msg = MIMEMultipart('alternative')
                 msg['Subject'] = subject
                 msg['From'] = self.msg_from
                 msg['To'] = recipient
                 
-                part = MIMEText(html_content, 'html')
+                part = MIMEText(recipient_html, 'html')
                 msg.attach(part)
                 
                 server.sendmail(self.user, recipient, msg.as_string())
-                print(f"✅ Sent email to {recipient}")
+                print(f"✅ Sent email to {recipient} (sid={sid})")
 
             server.quit()
             
