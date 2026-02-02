@@ -39,18 +39,33 @@ class YouTubeCrawler:
         try:
             with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                 # Appending /videos ensures we get the latest uploads.
-                target_url = f"{channel_url}/videos" if not channel_url.endswith('/videos') else channel_url
+                # Use a more robust check for channel URL
+                if '/channel/' in channel_url or '/c/' in channel_url or '/user/' in channel_url or '@' in channel_url:
+                    target_url = f"{channel_url.rstrip('/')}/videos"
+                else:
+                    target_url = channel_url
                 
                 # First get the playlist
-                result = ydl.extract_info(target_url, download=False)
-                
-                if 'entries' in result:
+                result = None
+                try:
+                    result = ydl.extract_info(target_url, download=False)
+                except Exception as e:
+                    print(f"  ✗ Failed to extract channel info for {target_url}: {e}")
+                    # Try without /videos as fallback
+                    if '/videos' in target_url:
+                        try:
+                            print(f"  ℹ️ Retrying without /videos: {channel_url}")
+                            result = ydl.extract_info(channel_url, download=False)
+                        except:
+                            pass
+
+                if result and 'entries' in result:
                     count = 0
                     for entry in result['entries']:
-                        if count >= limit:
-                            break
                         if not entry:
                             continue
+                        if count >= limit:
+                            break
                         
                         video_id = entry.get('id')
                         if not video_id:
@@ -67,7 +82,6 @@ class YouTubeCrawler:
                         
                         # Try full extraction for richer data, but fallback if blocked
                         try:
-                            # We use a separate instance for individual video to avoid state issues if one fails
                             video_info = ydl.extract_info(video_url, download=False)
                             if video_info:
                                 title = video_info.get('title', title)
@@ -79,12 +93,13 @@ class YouTubeCrawler:
                                 if thumbnails:
                                     # Pick the best thumbnail
                                     thumbnail_url = thumbnails[-1]['url']
-                                print(f"  ✓ Fetched full info for: {title}")
+                                # print(f"  ✓ Fetched full info for: {title}")
                             else:
                                 print(f"  ℹ️ Using basic info for: {title} (Full info skipped)")
                         except Exception as e:
                             # If blocked, we still have the basic info from the entry!
-                            print(f"  ℹ️ Using basic info for: {title} (Individual fetch skipped: bot detection or error)")
+                            # print(f"  ℹ️ Using basic info for: {title}")
+                            pass
 
                         video_data = {
                             'source_type': 'youtube',
@@ -100,6 +115,9 @@ class YouTubeCrawler:
                         videos.append(video_data)
                         count += 1
                         
+                else:
+                    print(f"  ✗ No videos found for {opinion_leader_name}")
+                        
         except Exception as e:
             print(f"Error crawling {channel_url}: {e}")
             
@@ -109,6 +127,6 @@ if __name__ == "__main__":
     # Test Use
     crawler = YouTubeCrawler()
     # Test with Syuka World
-    test_videos = crawler.fetch_latest_videos("https://www.youtube.com/@syukaworld", limit=2, opinion_leader_name="슈카월드")
+    test_videos = crawler.fetch_latest_videos("https://www.youtube.com/channel/UCsJ6RuBiTVWRX156FVbeaGg", limit=2, opinion_leader_name="슈카월드")
     import json
     print(json.dumps(test_videos, indent=2, ensure_ascii=False))

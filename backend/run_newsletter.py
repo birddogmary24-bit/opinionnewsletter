@@ -66,14 +66,36 @@ def run_newsletter_job(is_production=False):
     # Limit to 30 items
     all_contents = all_contents[:30]
     
-    # Logic: Top 3 mixed, rest grouped by opinion_leader
-    top_stories = all_contents[:3]
-    remaining_stories = all_contents[3:]
+    # 2. Diversify Top Stories (Pick top 1 from each major category if available)
+    # Categories: 경제, 부동산, IT, 과학
+    major_cats = ['경제', '부동산', 'IT', '과학']
+    top_stories = []
+    seen_ids = set()
     
+    # 2.1 First, try to get the top item from each major category
+    for cat in major_cats:
+        cat_items = [d for d in all_contents if d.get('category') == cat]
+        if cat_items:
+            item = cat_items[0]
+            top_stories.append(item)
+            seen_ids.add(f"{item['source_type']}_{item['original_id']}")
+    
+    # 2.2 Fill up to 3 (or 4) top stories if needed
+    for item in all_contents:
+        if len(top_stories) >= 4:
+            break
+        uid = f"{item['source_type']}_{item['original_id']}"
+        if uid not in seen_ids:
+            top_stories.append(item)
+            seen_ids.add(uid)
+            
+    # Remaining stories for category sections
+    remaining_stories = [i for i in all_contents if f"{i['source_type']}_{i['original_id']}" not in seen_ids]
+    
+    # Group by category strictly
     category_stories = {}
     for story in remaining_stories:
-        # Group by category (new) or fallback to leader if category is missing
-        cat = story.get('category') or story.get('opinion_leader') or '기타'
+        cat = story.get('category') or '기타'
         if cat not in category_stories:
             category_stories[cat] = []
         category_stories[cat].append(story)

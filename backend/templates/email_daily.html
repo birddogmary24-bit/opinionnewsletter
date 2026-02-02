@@ -36,7 +36,7 @@
                 <!-- Main Container -->
                 <table border="0" cellpadding="0" cellspacing="0" width="600" class="full-width"
                     style="max-width: 600px; width: 100%;">
-                    <!-- Tracking Pixel (Invisible but not 'display: none' to avoid blocking) -->
+                    <!-- Tracking Pixel -->
                     <tr>
                         <td style="height: 0; line-height: 0; font-size: 0;">
                             <img src="{{ tracking_url }}/api/track/open?id={{ mail_id }}&sid={{ sid }}" width="1"
@@ -47,7 +47,7 @@
                     <tr>
                         <td align="center" style="padding: 50px 20px 30px;">
                             <h1
-                                style="margin: 0; font-size: 36px; font-weight: 900; color: #60a5fa; letter-spacing: -2px; line-height: 1; font-family: 'Pretendard', sans-serif;">
+                                style="margin: 0; font-size: 36px; font-weight: 900; color: #60a5fa; letter-spacing: -2px; line-height: 1;">
                                 오뉴</h1>
                             <p
                                 style="margin: 12px 0 0; font-size: 11px; color: #475569; font-weight: bold; letter-spacing: 3px; text-transform: uppercase;">
@@ -80,18 +80,26 @@
                                 <img src="{{ item.thumbnail }}" alt="{{ item.title }}" width="560"
                                     style="width: 100%; height: auto; border-radius: 16px; border: 1px solid #1e293b; display: block;" />
                                 <div style="padding-top: 15px;">
-                                    <span
-                                        style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;">{{
-                                        item.opinion_leader }}</span>
-                                    <!-- Reduced title font size significantly -->
                                     <h2
-                                        style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
+                                        style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff; line-height: 1.4; letter-spacing: -0.3px; text-decoration: none;">
                                         {{ item.title }}</h2>
-                                    <div style="margin-top: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
-                                        {% if item.view_count %}
-                                        조회수 {{ "{:,}".format(item.view_count) }}
-                                        {% else %}
-                                        조회수 없음
+                                    <div style="margin-top: 8px; font-size: 12px; display: block;">
+                                        <!-- View Count -->
+                                        <span style="color: #64748b; font-weight: 500;">
+                                            {% if item.view_count %}
+                                            조회수 {{ "{:,}".format(item.view_count) }}
+                                            {% else %}
+                                            조회수 없음
+                                            {% endif %}
+                                        </span>
+                                        <!-- Channel Name (Prominent Yellow) -->
+                                        <span style="color: #94a3b8; padding: 0 8px;">•</span>
+                                        <span style="color: #fbbf24; font-weight: 700;">{{ item.opinion_leader }}</span>
+                                        <!-- Category Tag (Small) -->
+                                        {% if item.category %}
+                                        <span style="color: #94a3b8; padding: 0 8px;">•</span>
+                                        <span style="color: #60a5fa; font-size: 11px; font-weight: 600;">{{
+                                            item.category }}</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -123,25 +131,28 @@
                         <td style="padding: 0 10px;">
                             <div style="font-size: 0; text-align: left;">
                                 {% for item in items %}
-                                <!-- Grid Item: PC 2-col (280px), Mobile 1-col (via CSS) -->
                                 <div class="grid-item"
-                                    style="display: inline-block; width: 280px; margin: 0 5px 20px 5px; vertical-align: top;">
+                                    style="display: inline-block; width: 280px; margin: 0 5px 25px 5px; vertical-align: top;">
                                     <a href="{{ tracking_url }}/api/track/click?id={{ mail_id }}&url={{ item.url | urlencode }}&target=category"
                                         style="text-decoration: none; display: block;">
                                         <img src="{{ item.thumbnail }}" alt="{{ item.title }}" width="280"
                                             style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #1e293b; display: block;" />
-                                        <div style="padding-top: 10px;">
+                                        <div style="padding-top: 12px;">
                                             <h3
-                                                style="margin: 0; font-size: 14px; font-weight: 400; color: #cbd5e1; line-height: 1.4; text-decoration: none; display: block;">
+                                                style="margin: 0; font-size: 14px; font-weight: 600; color: #cbd5e1; line-height: 1.5; text-decoration: none;">
                                                 {{ item.title }}
                                             </h3>
-                                            <div
-                                                style="margin-top: 4px; font-size: 11px; color: #64748b; font-weight: 400;">
-                                                {% if item.view_count %}
-                                                조회수 {{ "{:,}".format(item.view_count) }}
-                                                {% else %}
-                                                조회수 없음
-                                                {% endif %}
+                                            <div style="margin-top: 6px; font-size: 11px;">
+                                                <span style="color: #64748b;">
+                                                    {% if item.view_count %}
+                                                    {{ "{:,}".format(item.view_count) }}회
+                                                    {% else %}
+                                                    조회수 없음
+                                                    {% endif %}
+                                                </span>
+                                                <span style="color: #94a3b8; padding: 0 4px;">•</span>
+                                                <span style="color: #fbbf24; font-weight: 700;">{{ item.opinion_leader
+                                                    }}</span>
                                             </div>
                                         </div>
                                     </a>
@@ -159,9 +170,8 @@
                             <p style="margin: 0; font-size: 11px; color: #475569; line-height: 1.8;">
                                 &copy; 2026 ONEW. All rights reserved.<br />
                                 <a href="#"
-                                    style="color: #64748b; text-decoration: underline;">수신거부</a>&nbsp;&nbsp;•&nbsp;&nbsp;<a
-                                    href="{{ tracking_url }}/api/track/click?id={{ mail_id }}&url={{ 'https://opinion-newsletter-web-810426728503.us-central1.run.app' | urlencode }}&target=website"
-                                    style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
+                                    style="color: #64748b; text-decoration: underline;">수신거부</a>&nbsp;&nbsp;•&nbsp;&nbsp;
+                                <a href="#" style="color: #64748b; text-decoration: underline;">웹사이트 방문</a>
                             </p>
                         </td>
                     </tr>
