@@ -1,6 +1,7 @@
 import sys
 import os
 import datetime
+import random
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 import binascii
@@ -60,49 +61,45 @@ def run_newsletter_job(is_production=False):
         print("⚠️ No content found in last 24h. Aborting.")
         return
 
-    # Sort by view_count DESC (Handle None values by using 0)
+    # Sort by view_count DESC
     all_contents.sort(key=lambda x: x.get('view_count') or 0, reverse=True)
     
-    # Limit to 30 items
-    all_contents = all_contents[:30]
-    
-    # 2. Diversify Top Stories (Pick top 1 from each major category if available)
     # Categories: 경제, 부동산, IT, 과학
-    major_cats = ['경제', '부동산', 'IT', '과학']
+    major_cats = ['과학', 'IT', '부동산', '경제']
+    random.shuffle(major_cats) # Randomly shuffle category appearance order
+    
     top_stories = []
+    category_stories = {}
     seen_ids = set()
     
-    # 2.1 First, try to get the top item from each major category
+    # Process each category
     for cat in major_cats:
+        # Get all content for this category
         cat_items = [d for d in all_contents if d.get('category') == cat]
-        if cat_items:
-            item = cat_items[0]
-            top_stories.append(item)
-            seen_ids.add(f"{item['source_type']}_{item['original_id']}")
-    
-    # 2.2 Fill up to 3 (or 4) top stories if needed
-    for item in all_contents:
-        if len(top_stories) >= 4:
-            break
-        uid = f"{item['source_type']}_{item['original_id']}"
-        if uid not in seen_ids:
-            top_stories.append(item)
-            seen_ids.add(uid)
+        
+        if not cat_items:
+            continue
             
-    # Remaining stories for category sections
-    remaining_stories = [i for i in all_contents if f"{i['source_type']}_{i['original_id']}" not in seen_ids]
-    
-    # Group by category strictly
-    category_stories = {}
-    for story in remaining_stories:
-        cat = story.get('category') or '기타'
-        if cat not in category_stories:
-            category_stories[cat] = []
-        category_stories[cat].append(story)
-    
+        # Select exactly top 3 for this category (if available)
+        top_3_for_cat = cat_items[:3]
+        
+        # 1. Pick the very best one for Top Highlights (if we have space)
+        if len(top_stories) < 4:
+            highlight = top_3_for_cat[0]
+            top_stories.append(highlight)
+            seen_ids.add(f"{highlight['source_type']}_{highlight['original_id']}")
+            
+            # The rest (max 2) go into the category section
+            remaining = [i for i in top_3_for_cat if f"{i['source_type']}_{i['original_id']}" not in seen_ids]
+            if remaining:
+                category_stories[cat] = remaining
+        else:
+            # All 3 go into the category section if highlights are full
+            category_stories[cat] = top_3_for_cat
+
     newsletter_data = {
         'top_stories': top_stories,
-        'category_stories': category_stories
+        'category_stories': category_stories # Already in shuffled order due to iteration
     }
 
     # 2. Fetch Active Subscribers

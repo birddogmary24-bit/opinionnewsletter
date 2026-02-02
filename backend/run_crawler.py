@@ -62,7 +62,7 @@ def run_crawlers():
             print(f"Crawling {source['name']} ({source['url']})...")
             videos = yt_crawler.fetch_latest_videos(
                 source['url'], 
-                limit=10, 
+                limit=5, 
                 opinion_leader_name=source['name']
             )
             # Add category to each video item
