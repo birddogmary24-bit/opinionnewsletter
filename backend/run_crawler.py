@@ -27,18 +27,27 @@ def translate_text(text, target_language='ko'):
 def run_crawlers():
     print("🚀 Starting Daily Crawler Job...")
     
-    # 1. Define Sources
+    # 1. Define Sources (Comprehensive list of Opinion Leaders)
     sources = [
-        {
-            "type": "youtube",
-            "name": "슈카월드",
-            "url": "https://www.youtube.com/@syukaworld"
-        },
-        {
-            "type": "youtube",
-            "name": "매경 월가월부",
-            "url": "https://www.youtube.com/@MK_Invest"
-        }
+        # 경제/투자 (Economy & Finance)
+        {"type": "youtube", "name": "슈카월드", "url": "https://www.youtube.com/channel/UCsJ6RuBiTVWRX156FVbeaGg", "category": "경제"},
+        {"type": "youtube", "name": "매경 월가월부", "url": "https://www.youtube.com/channel/UCIipmgxpUxDmPP-ma3Ahvbw", "category": "경제"},
+        {"type": "youtube", "name": "홍춘욱의 경제강의노트", "url": "https://www.youtube.com/channel/UCmNbuxmvRVv9OcdAO0cpLnw", "category": "경제"},
+        
+        # 부동산 (Real Estate)
+        {"type": "youtube", "name": "월급쟁이부자들TV", "url": "https://www.youtube.com/channel/UCDSj40X9FFUAnx1nv7gQhcA", "category": "부동산"},
+        {"type": "youtube", "name": "부읽남TV", "url": "https://www.youtube.com/channel/UC2QeHNJFfuQWB4cy3M-745g", "category": "부동산"},
+        {"type": "youtube", "name": "재테크 읽어주는 파일럿", "url": "https://www.youtube.com/@pilot_money", "category": "부동산"},
+        
+        # IT/코딩 (IT & Tech)
+        {"type": "youtube", "name": "조코딩", "url": "https://www.youtube.com/@jocoding", "category": "IT"},
+        {"type": "youtube", "name": "노마드 코더", "url": "https://www.youtube.com/@nomadcoders", "category": "IT"},
+        {"type": "youtube", "name": "포프TV", "url": "https://www.youtube.com/@popekim", "category": "IT"},
+        
+        # 과학 (Science)
+        {"type": "youtube", "name": "안될과학", "url": "https://www.youtube.com/@the_AS", "category": "과학"},
+        {"type": "youtube", "name": "궤도", "url": "https://www.youtube.com/@science_orbit", "category": "과학"},
+        {"type": "youtube", "name": "과학드림", "url": "https://www.youtube.com/@ScienceDream", "category": "과학"}
     ]
     
     # 2. Initialize Crawlers
@@ -56,6 +65,9 @@ def run_crawlers():
                 limit=10, 
                 opinion_leader_name=source['name']
             )
+            # Add category to each video item
+            for v in videos:
+                v['category'] = source.get('category', '기타')
             all_content.extend(videos)
             
     # 4. Save to Database

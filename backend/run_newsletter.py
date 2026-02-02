@@ -72,10 +72,11 @@ def run_newsletter_job(is_production=False):
     
     category_stories = {}
     for story in remaining_stories:
-        leader = story.get('opinion_leader', 'Other')
-        if leader not in category_stories:
-            category_stories[leader] = []
-        category_stories[leader].append(story)
+        # Group by category (new) or fallback to leader if category is missing
+        cat = story.get('category') or story.get('opinion_leader') or '기타'
+        if cat not in category_stories:
+            category_stories[cat] = []
+        category_stories[cat].append(story)
     
     newsletter_data = {
         'top_stories': top_stories,
