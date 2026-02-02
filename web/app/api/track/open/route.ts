@@ -57,6 +57,15 @@ export async function GET(request: Request) {
                 await db.collection('mail_history').doc(mailId).update({
                     open_count: FieldValue.increment(1)
                 });
+
+                // Track in Amplitude
+                const { trackAmplitudeEvent } = await import('@/lib/amplitude');
+                await trackAmplitudeEvent('Email Open', identity, {
+                    mailId,
+                    sid: sid || 'none',
+                    ip,
+                    ua
+                });
             }
         } catch (error) {
             console.error("Tracking Error:", error);

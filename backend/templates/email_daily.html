@@ -26,6 +26,9 @@
             }
         }
     </style>
+    <!-- Amplitude Integration (Updated per guide) -->
+    <script src="https://cdn.amplitude.com/script/8ea3ecbd77bd681c16097fe2fc257c82.js"></script>
+    <script>window.amplitude.add(window.sessionReplay.plugin({ sampleRate: 1 })); window.amplitude.init('8ea3ecbd77bd681c16097fe2fc257c82', { "fetchRemoteConfig": true, "autocapture": { "attribution": true, "fileDownloads": true, "formInteractions": true, "pageViews": true, "sessions": true, "elementInteractions": true, "networkTracking": true, "webVitals": true, "frustrationInteractions": { "errorClicks": true, "deadClicks": true, "rageClicks": true } } });</script>
 </head>
 
 <body

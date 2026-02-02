@@ -14,6 +14,13 @@ export async function POST(request: Request) {
             timestamp: FieldValue.serverTimestamp(),
         });
 
+        // Track in Amplitude
+        const { trackAmplitudeEvent } = await import('@/lib/amplitude');
+        await trackAmplitudeEvent('Web Page View', 'anonymous_web', {
+            path: path || '/',
+            referrer: referrer || ''
+        });
+
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ success: false }, { status: 500 });

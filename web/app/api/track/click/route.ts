@@ -25,6 +25,19 @@ export async function GET(request: Request) {
                     click_count: FieldValue.increment(1)
                 });
             }
+
+            // Track in Amplitude
+            const { trackAmplitudeEvent } = await import('@/lib/amplitude');
+            const sid = searchParams.get('sid');
+            const ip = request.headers.get('x-forwarded-for') || 'unknown';
+            const identity = sid || Buffer.from(ip).toString('base64').substring(0, 50);
+
+            await trackAmplitudeEvent('Link Click', identity, {
+                mailId: mailId || 'web',
+                url,
+                target,
+                sid: sid || 'none'
+            });
         } catch (error) {
             console.error("Click Tracking Error:", error);
         }

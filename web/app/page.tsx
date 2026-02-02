@@ -13,6 +13,7 @@ interface Content {
     scraped_at: string;
     opinion_leader: string;
     view_count?: number;
+    category?: string;
 }
 
 export default function Home() {
@@ -23,7 +24,17 @@ export default function Home() {
     const [loadingContent, setLoadingContent] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
 
-    const categories = ['All', '슈카월드', '매경 월가월부'];
+    const categories = ['All', '정치', '경제', '사회', '부동산', 'IT', '과학', '문화', '지식'];
+    const channels = [
+        "김현정의 뉴스쇼", "슈카월드", "크랩 KLAB", "스브스뉴스", "YTN 돌발영상",
+        "삼프로TV", "머니인사이드", "박곰희TV", "한경 코리아마켓", "달란트투자",
+        "씨리얼 CeREEL", "ODG", "보따 BODA", "희철리즘", "헤이뉴스",
+        "월급쟁이부자들TV", "부읽남", "빠숑의 세상 답사기", "집코노미TV", "리얼캐스트TV",
+        "ITSub잇섭", "주연 ZUYONI", "EO 이오", "UNDERkg", "뻘짓연구소",
+        "안될과학", "긱블", "과학드림", "1분과학", "에스오디 SOD",
+        "이동진의 파이아키아", "셜록현준", "조승연의 탐구생활", "널 위한 문화예술", "essential;",
+        "사물궁이 잡학지식", "지식한입", "교양만두", "14F 일사에프", "효짱"
+    ];
 
     useEffect(() => {
         // Track Page View
@@ -89,7 +100,10 @@ export default function Home() {
 
     const filteredRemaining = activeTab === 'All'
         ? remainingContents
-        : remainingContents.filter(c => c.opinion_leader.includes(activeTab));
+        : remainingContents.filter(c =>
+            c.category === activeTab ||
+            c.opinion_leader.includes(activeTab)
+        );
 
     const trackClick = (url: string, target: string) => {
         fetch(`/api/track/click?url=${encodeURIComponent(url)}&target=${target}`).catch(() => { });
@@ -275,7 +289,7 @@ export default function Home() {
                                 ))}
                             </div>
 
-                            {/* Detailed List Section */}
+                            {/* Category-based Sections or Filtered List */}
                             <div className="max-w-5xl mx-auto">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 bg-white/5 p-6 rounded-3xl border border-white/5 backdrop-blur-xl">
                                     <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1">
@@ -297,54 +311,129 @@ export default function Home() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    {filteredRemaining.map((item) => (
-                                        <a
-                                            key={item.id}
-                                            href={item.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={() => trackClick(item.url, 'web_category')}
-                                            className="group bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 md:p-8 hover:border-white/10 transition-all duration-300 hover:bg-slate-900/80 text-left block"
-                                        >
-                                            <article>
-                                                <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6 md:gap-10">
-                                                    {item.thumbnail && (
-                                                        <div className="w-full md:w-[280px] aspect-video flex-shrink-0 rounded-2xl overflow-hidden bg-slate-800 shadow-2xl relative">
-                                                            <img
-                                                                src={item.thumbnail}
-                                                                alt={item.title}
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center flex-wrap gap-4 mb-4">
-                                                            <span className="text-[10px] md:text-xs font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                                                                {item.opinion_leader}
-                                                            </span>
-                                                            <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
-                                                                <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-                                                                {item.scraped_at ? new Date(item.scraped_at).toLocaleDateString('ko-KR') : '-'}
-                                                            </span>
-                                                        </div>
-                                                        <h3 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors leading-tight tracking-tight">
-                                                            {item.title}
-                                                        </h3>
-                                                        <div className="text-xs font-bold text-slate-500">
-                                                            {item.view_count ? `조회수 ${item.view_count.toLocaleString()}` : '조회수 없음'}
-                                                        </div>
+                                {activeTab === 'All' ? (
+                                    <div className="space-y-20">
+                                        {categories.slice(1).map(cat => {
+                                            const catContents = remainingContents.filter(item => item.category === cat);
+                                            if (catContents.length === 0) return null;
+
+                                            return (
+                                                <div key={cat} className="space-y-8">
+                                                    <div className="flex items-center space-x-4">
+                                                        <h2 className="text-2xl font-black text-white">{cat}</h2>
+                                                        <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        {catContents.map(item => (
+                                                            <a
+                                                                key={item.id}
+                                                                href={item.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                onClick={() => trackClick(item.url, 'web_category')}
+                                                                className="group bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl p-5 hover:border-white/10 transition-all duration-300 hover:bg-slate-900/80 text-left block"
+                                                            >
+                                                                <article className="flex gap-4">
+                                                                    {item.thumbnail && (
+                                                                        <div className="w-32 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-slate-800 shadow-lg">
+                                                                            <img
+                                                                                src={item.thumbnail}
+                                                                                alt={item.title}
+                                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                                            />
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <span className="text-[10px] font-bold text-blue-400">
+                                                                                {item.opinion_leader}
+                                                                            </span>
+                                                                        </div>
+                                                                        <h3 className="text-sm font-bold text-white mb-2 group-hover:text-blue-400 transition-colors line-clamp-2 leading-tight">
+                                                                            {item.title}
+                                                                        </h3>
+                                                                        <div className="text-[10px] text-slate-500">
+                                                                            {item.view_count ? `조회수 ${item.view_count.toLocaleString()}` : ''}
+                                                                        </div>
+                                                                    </div>
+                                                                </article>
+                                                            </a>
+                                                        ))}
                                                     </div>
                                                 </div>
-                                            </article>
-                                        </a>
-                                    ))}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {filteredRemaining.map((item) => (
+                                            <a
+                                                key={item.id}
+                                                href={item.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={() => trackClick(item.url, 'web_category')}
+                                                className="group bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 md:p-8 hover:border-white/10 transition-all duration-300 hover:bg-slate-900/80 text-left block"
+                                            >
+                                                <article>
+                                                    <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6 md:gap-10">
+                                                        {item.thumbnail && (
+                                                            <div className="w-full md:w-[280px] aspect-video flex-shrink-0 rounded-2xl overflow-hidden bg-slate-800 shadow-2xl relative">
+                                                                <img
+                                                                    src={item.thumbnail}
+                                                                    alt={item.title}
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center flex-wrap gap-4 mb-4">
+                                                                <span className="text-[10px] md:text-xs font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                                                                    {item.opinion_leader}
+                                                                </span>
+                                                                <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
+                                                                    <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                                                                    {item.scraped_at ? new Date(item.scraped_at).toLocaleDateString('ko-KR') : '-'}
+                                                                </span>
+                                                            </div>
+                                                            <h3 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors leading-tight tracking-tight">
+                                                                {item.title}
+                                                            </h3>
+                                                            <div className="text-xs font-bold text-slate-500">
+                                                                {item.view_count ? `조회수 ${item.view_count.toLocaleString()}` : '조회수 없음'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </article>
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}
                 </div>
             </main>
+
+            {/* Supported Channels Section */}
+            <section className="py-24 bg-slate-900/30">
+                <div className="container mx-auto max-w-6xl px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-black text-white mb-4">구독되는 오피니언 리더</h2>
+                        <p className="text-slate-400 font-medium">현재 40여 개의 검증된 채널로부터 인사이트를 수집하고 있습니다.</p>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        {channels.map(channel => (
+                            <span
+                                key={channel}
+                                className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-all cursor-default"
+                            >
+                                {channel}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
             {/* Footer */}
             <footer className="bg-slate-900 border-t border-white/5 text-slate-500 py-24 text-base relative z-10 overflow-hidden">

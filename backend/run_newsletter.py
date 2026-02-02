@@ -2,55 +2,25 @@ import sys
 import os
 import datetime
 import random
-from Crypto.Cipher import AES
-from Crypto.Util import Counter
-import binascii
+from utils.db import get_db
+from services.email_service import EmailService
+from services.crypto_service import decrypt_email
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from services.email_service import EmailService
-from utils.db import get_db
-
-# Decryption Config (MUST MATCH WEB)
-# For demo, we used manually set key in web API. Ideally share via .env
-# In web/app/api/subscribe/route.ts we set:
-ENCRYPTION_KEY_HEX = '3132333435363738393031323334353637383930313233343536373839303132' # '12345678901234567890123456789012' in hex?
-# No, node crypto uses raw buffer. Let's match the logic.
-# Key: '12345678901234567890123456789012'
-KEY_BYTES = b'12345678901234567890123456789012'
-
-def decrypt_email(encrypted_str):
-    """
-    Decrypts email formatted as iv_hex:ciphertext_hex
-    NodeJS crypto default is AES-CBC-256 usually if just 'aes-256-cbc'
-    """
-    try:
-        iv_hex, ciphertext_hex = encrypted_str.split(':')
-        iv = binascii.unhexlify(iv_hex)
-        ciphertext = binascii.unhexlify(ciphertext_hex)
-        
-        cipher = AES.new(KEY_BYTES, AES.MODE_CBC, iv)
-        decrypted = cipher.decrypt(ciphertext)
-        
-        # Remove padding (PKCS7)
-        pad_len = decrypted[-1]
-        return decrypted[:-pad_len].decode('utf-8')
-    except Exception as e:
-        print(f"Decryption error: {e}")
-        return None
 
 def run_newsletter_job(is_production=False):
     mode_text = "PRODUCTION" if is_production else "TEST MODE (Test Group Only)"
     print(f"🚀 Starting Newsletter Delivery Job [{mode_text}]...")
     db = get_db()
     
-    # 1. Fetch Latest Content (Within 24 hours for fresh daily delivery)
-    print("Fetching today's content (last 24h)...")
-    yesterday = datetime.datetime.now() - datetime.timedelta(hours=24)
+    # 1. Fetch Latest Content (Within last 24h OR recently updated)
+    # Note: We look back 26 hours to catch everything from the previous morning's crawl
+    print("Fetching today's content (last 26h)...")
+    time_threshold = datetime.datetime.now() - datetime.timedelta(hours=26)
     
     docs = db.collection('contents')\
-        .where('scraped_at', '>=', yesterday)\
+        .where('scraped_at', '>=', time_threshold)\
         .stream()
     
     all_contents = []
@@ -58,48 +28,64 @@ def run_newsletter_job(is_production=False):
         all_contents.append(doc.to_dict())
     
     if not all_contents:
-        print("⚠️ No content found in last 24h. Aborting.")
+        print("⚠️ No content found in last 26h. Aborting.")
         return
 
-    # Sort by view_count DESC
-    all_contents.sort(key=lambda x: x.get('view_count') or 0, reverse=True)
+    # Sort all by view_count DESC to prioritize quality
+    # Treat None as -1 to put them at the end of sorted list but still allow selection
+    all_contents.sort(key=lambda x: x.get('view_count') if x.get('view_count') is not None else -1, reverse=True)
     
-    # Categories: 경제, 부동산, IT, 과학
-    major_cats = ['과학', 'IT', '부동산', '경제']
-    random.shuffle(major_cats) # Randomly shuffle category appearance order
+    # All Categories
+    major_cats = ['정치', '경제', '사회', '부동산', 'IT', '과학', '문화', '지식']
+    random.shuffle(major_cats)
     
     top_stories = []
     category_stories = {}
     seen_ids = set()
+    seen_channels = set() # Global channel deduplication to ensure maximum variety
     
-    # Process each category
-    for cat in major_cats:
-        # Get all content for this category
+    # Selection Phase 1: Pick Top Highlights
+    # We want 4 highlights from 4 different categories AND 4 different channels
+    potential_highlight_cats = [cat for cat in major_cats if any(d.get('category') == cat for d in all_contents)]
+    highlight_cats = potential_highlight_cats[:4]
+    
+    for cat in highlight_cats:
         cat_items = [d for d in all_contents if d.get('category') == cat]
-        
+        for item in cat_items:
+            channel = item.get('opinion_leader')
+            if channel not in seen_channels:
+                top_stories.append(item)
+                seen_ids.add(f"{item['source_type']}_{item['original_id']}")
+                seen_channels.add(channel)
+                break # Move to next category highlight
+
+    # Selection Phase 2: Fill Category Sections
+    # We iterate through ALL categories that have content
+    for cat in major_cats:
+        cat_items = [d for d in all_contents if d.get('category') == cat]
         if not cat_items:
             continue
             
-        # Select exactly top 3 for this category (if available)
-        top_3_for_cat = cat_items[:3]
-        
-        # 1. Pick the very best one for Top Highlights (if we have space)
-        if len(top_stories) < 4:
-            highlight = top_3_for_cat[0]
-            top_stories.append(highlight)
-            seen_ids.add(f"{highlight['source_type']}_{highlight['original_id']}")
+        display_items = []
+        for item in cat_items:
+            # Skip if already in highlights or if this channel was already used
+            item_id = f"{item['source_type']}_{item['original_id']}"
+            channel = item.get('opinion_leader')
             
-            # The rest (max 2) go into the category section
-            remaining = [i for i in top_3_for_cat if f"{i['source_type']}_{i['original_id']}" not in seen_ids]
-            if remaining:
-                category_stories[cat] = remaining
-        else:
-            # All 3 go into the category section if highlights are full
-            category_stories[cat] = top_3_for_cat
+            if item_id not in seen_ids and channel not in seen_channels:
+                display_items.append(item)
+                seen_ids.add(item_id)
+                seen_channels.add(channel)
+                
+                if len(display_items) >= 3:
+                    break
+        
+        if display_items:
+            category_stories[cat] = display_items
 
     newsletter_data = {
         'top_stories': top_stories,
-        'category_stories': category_stories # Already in shuffled order due to iteration
+        'category_stories': category_stories
     }
 
     # 2. Fetch Active Subscribers
@@ -111,53 +97,40 @@ def run_newsletter_job(is_production=False):
         data = doc.to_dict()
         is_test_user = data.get('is_test') == True
         
-        # In production mode, skip test users
-        if is_production and is_test_user:
-            continue
-        
-        # In test mode, skip production users
-        if not is_production and not is_test_user:
-            continue
-            
-        enc_email = data.get('email')
-        if enc_email:
-            email = decrypt_email(enc_email)
-            if email:
-                recipients.append(email)
-            else:
-                # If decryption fails (maybe plaintext for testing), check
-                if '@' in enc_email:
-                    recipients.append(enc_email)
+        if is_production:
+            if not is_test_user: recipients.append(decrypt_email(data['email']))
+        else:
+            if is_test_user: recipients.append(decrypt_email(data['email']))
     
-    recipients = list(set(recipients)) # Deduplicate
+    recipients = [r for r in list(set(recipients)) if r]
     
     if not recipients:
-        print(f"ℹ️ No {'production' if is_production else 'test'} recipients found. Job skipped.")
+        print(f"ℹ️ No recipients found logic. Job skipped.")
         return
 
     print(f"📧 Found {len(recipients)} recipients.")
     
-    # 3. Create mail_history entry first to get mail_id
+    # 3. Create mail_history entry
     mail_history_ref = db.collection('mail_history').add({
         'sent_at': datetime.datetime.now().isoformat(),
         'type': 'production' if is_production else 'test_job',
         'recipient_count': len(recipients),
         'status': 'success',
         'simulated': False,
-        'open_count': 0,      # Unique Opens (UV)
-        'email_pv': 0,        # Total Page Views (PV)
-        'click_count': 0      # Clicks
+        'open_count': 0,
+        'email_pv': 0,
+        'click_count': 0
     })
     
-    mail_id = mail_history_ref[1].id # Firestore .add returns (time, doc_ref)
+    mail_id = mail_history_ref[1].id
     
     # 4. Send Emails
     email_service = EmailService()
     email_service.send_newsletter(recipients, newsletter_data, mail_id=mail_id)
     
-    print(f"✅ Newsletter Job [{mode_text}] Complete.")
+    print(f"✅ Newsletter Job Complete.")
 
 if __name__ == "__main__":
-    # Check for --production flag
-    is_prod = "--production" in sys.argv
-    run_newsletter_job(is_production=is_prod)
+    # If run manually, default to test mode unless production arg passed
+    prod = "--production" in sys.argv
+    run_newsletter_job(is_production=prod)
