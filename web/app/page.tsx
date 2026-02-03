@@ -83,10 +83,14 @@ export default function Home() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
             });
-            if (res.ok) {
+            const data = await res.json();
+
+            if (res.ok && data.success) {
                 setStatus('success');
                 setEmail('');
                 setAgreed(false);
+                // Redirect to onboarding with the subscriber ID
+                window.location.href = `/onboarding?subscriberId=${data.id}`;
             } else {
                 setStatus('error');
             }

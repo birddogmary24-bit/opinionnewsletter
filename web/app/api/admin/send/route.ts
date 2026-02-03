@@ -40,14 +40,29 @@ export async function POST(request: Request) {
 
         const contents = contentSnapshot.docs.map(d => d.data());
 
-        // 3. Determine Recipients
-        let recipients: string[] = [];
+        // 3. Determine Recipients (Array of objects now)
+        interface Recipient {
+            email: string;
+            id: string;
+            preferences?: {
+                channels?: string[];
+                categories?: string[];
+            };
+        }
+        let recipients: Recipient[] = [];
 
         if (type === 'individual' && subscriberId) {
             const subDoc = await db.collection('subscribers').doc(subscriberId).get();
             if (subDoc.exists) {
-                const dec = decryptEmail(subDoc.data()?.email);
-                if (dec) recipients.push(dec);
+                const data = subDoc.data();
+                const dec = decryptEmail(data?.email);
+                if (dec) {
+                    recipients.push({
+                        email: dec,
+                        id: subDoc.id,
+                        preferences: data?.preferences
+                    });
+                }
             }
         } else if (type === 'group' || type === 'all') {
             const subSnapshot = await db.collection('subscribers').where('status', '==', 'active').get();
@@ -62,7 +77,13 @@ export async function POST(request: Request) {
 
                 if (shouldAdd) {
                     const dec = decryptEmail(data.email);
-                    if (dec) recipients.push(dec);
+                    if (dec) {
+                        recipients.push({
+                            email: dec,
+                            id: doc.id,
+                            preferences: data.preferences
+                        });
+                    }
                 }
             });
         }
@@ -78,12 +99,12 @@ export async function POST(request: Request) {
             recipient_count: recipients.length,
             status: 'success',
             simulated: !process.env.GMAIL_USER,
-            open_count: 0,      // Unique Opens (UV)
-            email_pv: 0,        // Total Page Views (PV)
-            click_count: 0,     // Initialize tracking counters
+            open_count: 0,
+            email_pv: 0,
+            click_count: 0,
         });
 
-        const mailId = mailHistoryRef.id;  // Extract Firestore-generated ID
+        const mailId = mailHistoryRef.id;
 
         // 5. Configure Transporter
         const transporter = nodemailer.createTransport({
@@ -94,59 +115,82 @@ export async function POST(request: Request) {
             },
         });
 
-        // 6. Prepare Template Data
-        // Top 3 stories by view_count
-        const topStories = contents
-            .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
-            .slice(0, 3);
+        // 6. Data Preparation Helper
+        // Standard Top 3 (Fallback)
+        const sortedByView = contents.sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
+        const defaultTopStories = sortedByView.slice(0, 3);
+        const remainingForCategories = sortedByView.slice(3);
 
-        // Category-based stories
-        // For demo, we'll group remaining items by opinion_leader or category field
-        // Adjust this logic based on your actual data structure
+        // Pre-calculate Helper for default categories
         const categoryStories: Record<string, any[]> = {};
         const categories = ['경제', '정치', '사회', '교육', '문화', 'IT/테크'];
 
-        // Simple categorization: if opinion_leader or title contains category keyword
-        const remainingContents = contents.slice(3); // Skip top 3
-
         categories.forEach(category => {
-            const categoryItems = remainingContents.filter((c: any) => {
+            const categoryItems = remainingForCategories.filter((c: any) => {
                 const text = `${c.opinion_leader} ${c.title}`.toLowerCase();
                 return text.includes(category.toLowerCase());
-            }).slice(0, 5); // Max 5 per category
+            }).slice(0, 5);
 
             if (categoryItems.length > 0) {
                 categoryStories[category] = categoryItems;
             }
         });
 
-        // 7. Load and Render Template
+        // 7. Load Template
         const templatePath = path.join(process.cwd(), 'templates', 'email_daily.html');
         const templateSource = fs.readFileSync(templatePath, 'utf-8');
         const template = Handlebars.compile(templateSource);
 
         // 8. Send Emails
-        // If no credentials are set, we simulate
         if (!process.env.GMAIL_USER) {
             console.log("⚠️ Simulation Mode: Would send to", recipients.length, "recipients");
             return NextResponse.json({ success: true, count: recipients.length, simulated: true });
         }
 
-        // Calculate KST date (UTC+9)
+        // Calculate KST date
         const now = new Date();
         const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
         const subjectDate = `${kstDate.getMonth() + 1}/${kstDate.getDate()}`;
-
         const trackingUrl = 'https://opinion-newsletter-web-810426728503.us-central1.run.app';
 
-        const promises = recipients.map(to => {
-            // Generate unique SID for this recipient (hashed email)
-            const sid = crypto.createHash('md5').update(to.toLowerCase()).digest('hex');
+        const promises = recipients.map(recipient => {
+            const sid = crypto.createHash('md5').update(recipient.email.toLowerCase()).digest('hex');
+
+            // --- Personalization Logic ---
+            let personalizedTopStories = defaultTopStories;
+
+            // If user has preferred channels
+            if (recipient.preferences?.channels && recipient.preferences.channels.length > 0) {
+                const preferredChannels = new Set(recipient.preferences.channels);
+
+                // Find all contents that match preferences
+                const preferredContent = contents.filter((c: any) => preferredChannels.has(c.opinion_leader));
+
+                // Sort preferred content by view count (or latest)
+                preferredContent.sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
+
+                // Construct the top 3: prioritize preferred, fill with default top
+                const finalTop: any[] = [...preferredContent];
+
+                // Prevent duplicates if we need to fill from default
+                const usedIds = new Set(finalTop.map(c => c.url)); // using URL as unique ID if ID not available
+
+                for (const item of sortedByView) {
+                    if (finalTop.length >= 3) break;
+                    if (!usedIds.has(item.url)) {
+                        finalTop.push(item);
+                        usedIds.add(item.url);
+                    }
+                }
+
+                personalizedTopStories = finalTop.slice(0, 3);
+            }
+            // -----------------------------
 
             const personalizedHtml = template({
                 contents: {
-                    top_stories: topStories,
-                    category_stories: categoryStories
+                    top_stories: personalizedTopStories,
+                    category_stories: categoryStories // We keep categories standard for now, but top stories are personalized
                 },
                 mailId,
                 sid,
@@ -156,7 +200,7 @@ export async function POST(request: Request) {
 
             return transporter.sendMail({
                 from: `"오뉴 뉴스레터" <${process.env.GMAIL_USER}>`,
-                to,
+                to: recipient.email,
                 subject: `오뉴 - 오늘의 오피니언 뉴스 [${subjectDate}]`,
                 html: personalizedHtml,
             });

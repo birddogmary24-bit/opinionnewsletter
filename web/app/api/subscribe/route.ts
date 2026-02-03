@@ -14,7 +14,7 @@ export async function POST(request: Request) {
         const encryptedEmail = encryptEmail(email);
 
         // Save to Firestore
-        await db.collection('subscribers').add({
+        const docRef = await db.collection('subscribers').add({
             email: encryptedEmail,
             status: 'active',
             is_test: false,
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
             source: 'web_landing'
         });
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, id: docRef.id });
     } catch (error) {
         console.error("Subscription error:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
