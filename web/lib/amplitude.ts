@@ -1,5 +1,5 @@
 export async function trackAmplitudeEvent(eventType: string, userId: string, eventProperties: any = {}) {
-    const API_KEY = '8ea3ecbd77bd681c16097fe2fc257c82';
+    const API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY || '8ea3ecbd77bd681c16097fe2fc257c82';
 
     // Fire and forget to avoid blocking the main thread too long
     // But we still wrap in a try-catch

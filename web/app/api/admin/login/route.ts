@@ -6,8 +6,8 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { password } = body;
 
-        // MVP: Hardcoded password as per PRD
-        if (password === 'opinion2026') {
+        const adminPassword = process.env.ADMIN_PASSWORD || 'opinion2026';
+        if (password === adminPassword) {
             const cookieStore = await cookies();
             cookieStore.set('admin_session', 'authenticated', {
                 httpOnly: true,

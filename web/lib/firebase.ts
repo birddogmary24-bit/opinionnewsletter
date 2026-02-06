@@ -5,18 +5,24 @@ import path from 'path';
 
 if (!admin.apps.length) {
     try {
-        // Determine path to service account
-        // In local dev, process.cwd() is the 'web' folder.
         const serviceAccountPath = process.env.SERVICE_ACCOUNT_PATH || path.join(process.cwd(), 'service-account.json');
 
-        console.log(`Loading service account from: ${serviceAccountPath}`);
-        const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+        let credential;
+        try {
+            // Try loading from file first (local dev)
+            const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+            credential = admin.credential.cert(serviceAccount);
+            console.log(`🔥 Firebase: Loaded credentials from ${serviceAccountPath}`);
+        } catch (e) {
+            // Fallback to ADC (Cloud Run environment)
+            credential = admin.credential.applicationDefault();
+            console.log("🔥 Firebase: Using Application Default Credentials (ADC)");
+        }
 
         admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
+            credential,
             projectId: 'opnionnewsletter'
         });
-        console.log("🔥 Firebase Admin Initialized");
     } catch (error) {
         console.error("Firebase admin init error", error);
     }
