@@ -91,13 +91,25 @@ class YouTubeCrawler:
                                     description = description_full[:200] + "..." if len(description_full) > 200 else description_full
                                 thumbnails = video_info.get('thumbnails', thumbnails)
                                 if thumbnails:
-                                    # Pick the best thumbnail
-                                    thumbnail_url = thumbnails[-1]['url']
+                                    # Prefer the highest resolution stable URL (i.ytimg.com)
+                                    # yt-dlp sometimes gives googlevideo.com URLs which expire.
+                                    best_thumb = None
+                                    for t in reversed(thumbnails):
+                                        if 'i.ytimg.com' in t.get('url', ''):
+                                            best_thumb = t['url']
+                                            break
+                                    
+                                    if best_thumb:
+                                        thumbnail_url = best_thumb
+                                    else:
+                                        # Fallback to constructing a stable URL if no stable one found in list
+                                        thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
                                 # print(f"  ✓ Fetched full info for: {title}")
                             else:
                                 print(f"  ℹ️ Using basic info for: {title} (Full info skipped)")
                         except Exception as e:
-                            # If blocked, we still have the basic info from the entry!
+                            # If blocked, we still have the basic info, but ensure it's stable
+                            thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
                             # print(f"  ℹ️ Using basic info for: {title}")
                             pass
 

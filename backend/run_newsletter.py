@@ -87,6 +87,27 @@ def run_newsletter_job(is_production=False):
         'top_stories': top_stories,
         'category_stories': category_stories
     }
+    
+    # 1.5 Thumbnail Repair & Default Injection
+    DEFAULT_THUMB = "https://opinion-newsletter-web-810426728503.us-central1.run.app/default_thumb.png"
+    
+    def repair_thumbnail(item):
+        # 1. YouTube: Always reconstruct stable URL to fix broken/expiring links
+        if item.get('source_type') == 'youtube' and item.get('original_id'):
+            return f"https://i.ytimg.com/vi/{item['original_id']}/hqdefault.jpg"
+        
+        # 2. Others: Use existing or fallback to default
+        if item.get('thumbnail'):
+            return item['thumbnail']
+            
+        return DEFAULT_THUMB
+
+    for item in newsletter_data['top_stories']:
+        item['thumbnail'] = repair_thumbnail(item)
+            
+    for cat_items in newsletter_data['category_stories'].values():
+        for item in cat_items:
+            item['thumbnail'] = repair_thumbnail(item)
 
     # 2. Fetch Active Subscribers
     print(f"Fetching {'production' if is_production else 'test'} subscribers...")
