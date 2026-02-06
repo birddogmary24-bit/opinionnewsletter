@@ -110,39 +110,52 @@ def run_crawlers():
     now = datetime.datetime.now()
     
     for item in all_content:
-        # Translate Title if needed
-        item['title'] = translate_text(item['title'])
-
         doc_id = f"{item['source_type']}_{item['original_id']}"
         doc_ref = collection_ref.document(doc_id)
         doc_snapshot = doc_ref.get()
         
         if doc_snapshot.exists:
-            # Update category and other fields, preserve scraped_at ONLY if it's within last 48h
-            # If it's older, we refresh it so it appears in the next newsletter.
             existing_data = doc_snapshot.to_dict()
-            scraped_at = existing_data.get('scraped_at')
             
-            update_data = {
-                'view_count': item.get('view_count'),
-                'description': item.get('description'),
-                'category': item.get('category') # Update category!
-            }
+            # --- Optimization 1: Translation Caching ---
+            # If we already have a title in the DB, reuse it to skip Translation API call
+            if existing_data.get('title'):
+                item['title'] = existing_data['title']
+            else:
+                item['title'] = translate_text(item['title'])
+
+            # --- Optimization 2: Conditional Update ---
+            # Only update if view count changed significantly (e.g., > 5%) or other fields changed
+            old_views = existing_data.get('view_count', 0) or 0
+            new_views = item.get('view_count', 0) or 0
             
-            # If the video is very old (>48h), but it's one of the current top 5,
-            # we don't want to spam it forever, but for this migration we want to see them.
-            # Actually, Discovery should be once. 
-            # But let's check if we should refresh scraped_at for this big update.
-            # I'll refresh it if the category name changed, to ensure it shows up.
-            if existing_data.get('category') != item.get('category'):
-                update_data['scraped_at'] = now
-                print(f"   - Category Migrated: {item['title']} -> {item['category']}")
+            # Significant view increase (at least 5% or first time seeing views)
+            significant_view_change = (new_views > old_views * 1.05) if old_views > 0 else (new_views > 0)
+            category_changed = existing_data.get('category') != item.get('category')
             
-            doc_ref.update(update_data)
+            if significant_view_change or category_changed:
+                update_data = {
+                    'view_count': new_views,
+                    'description': item.get('description'),
+                    'category': item.get('category')
+                }
+                
+                if category_changed:
+                    update_data['scraped_at'] = now
+                    print(f"   - Category Migrated/Updated: {item['title']} -> {item['category']}")
+                
+                doc_ref.update(update_data)
+                print(f"   - Updated: {item['title']} (Views: {old_views} -> {new_views})")
+            else:
+                # Skip write to save Firestore quota
+                pass
         else:
+            # New item: must translate and save
+            item['title'] = translate_text(item['title'])
             item['scraped_at'] = now
             doc_ref.set(item)
             saved_count += 1
+            print(f"   + New Content: {item['title']}")
         
     print(f"✅ Job Complete. {saved_count} new items processed.")
 
