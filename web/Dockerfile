@@ -46,16 +46,11 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy the service account file for backend connectivity if needed
-# Note: Security-wise, it's better to use Secret Manager, but for MVP strictly following current setup:
-COPY --from=builder --chown=nextjs:nodejs /app/service-account.json ./service-account.json
-
+# USER nextjs to be safe
 USER nextjs
 
 EXPOSE 3000
 
 ENV PORT 3000
-# Ensure we point to the service account
-ENV SERVICE_ACCOUNT_PATH ./service-account.json
 
 CMD ["node", "server.js"]
