@@ -12,11 +12,11 @@ if (!admin.apps.length) {
             // Try loading from file first (local dev)
             const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
             credential = admin.credential.cert(serviceAccount);
-            console.log(`🔥 Firebase: Loaded credentials from ${serviceAccountPath}`);
+            console.log('Firebase: Loaded credentials from service account file');
         } catch (e) {
             // Fallback to ADC (Cloud Run environment)
             credential = admin.credential.applicationDefault();
-            console.log("🔥 Firebase: Using Application Default Credentials (ADC)");
+            console.log("Firebase: Using Application Default Credentials (ADC)");
         }
 
         admin.initializeApp({

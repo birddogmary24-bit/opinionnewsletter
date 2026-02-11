@@ -99,11 +99,11 @@ export async function GET() {
             quota: {
                 todayCount,
                 limit: 500,
-                sender: process.env.GMAIL_USER || 'birddogmary24@gmail.com'
+                sender: process.env.GMAIL_USER ? '(configured)' : '(not configured)'
             }
         });
     } catch (error) {
-        console.error("Error fetching stats:", error);
+        console.error("Error fetching stats");
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

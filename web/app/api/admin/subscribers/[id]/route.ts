@@ -25,7 +25,7 @@ export async function DELETE(
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Error deleting subscriber:", error);
+        console.error("Error deleting subscriber");
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -52,7 +52,7 @@ export async function PATCH(
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Error updating subscriber:", error);
+        console.error("Error updating subscriber");
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

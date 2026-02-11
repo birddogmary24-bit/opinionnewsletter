@@ -6,12 +6,16 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { password } = body;
 
-        const adminPassword = process.env.ADMIN_PASSWORD || 'opinion2026';
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (!adminPassword) {
+            return NextResponse.json({ success: false, message: 'Server configuration error' }, { status: 500 });
+        }
         if (password === adminPassword) {
             const cookieStore = await cookies();
             cookieStore.set('admin_session', 'authenticated', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
                 maxAge: 60 * 60 * 24, // 1 day
                 path: '/',
             });

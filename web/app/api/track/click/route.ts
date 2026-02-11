@@ -43,13 +43,17 @@ export async function GET(request: Request) {
         }
     }
 
-    // Redirect to the original URL
+    // Redirect to the original URL (with open redirect protection)
     if (url) {
         try {
-            return NextResponse.redirect(new URL(url));
-        } catch (e) {
-            // Fallback for relative or malformed URLs that work as strings
-            return NextResponse.redirect(url);
+            const parsedUrl = new URL(url);
+            const allowedProtocols = ['http:', 'https:'];
+            if (!allowedProtocols.includes(parsedUrl.protocol)) {
+                return NextResponse.json({ error: 'Invalid URL protocol' }, { status: 400 });
+            }
+            return NextResponse.redirect(parsedUrl);
+        } catch {
+            return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
         }
     }
 

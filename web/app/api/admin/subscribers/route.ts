@@ -31,7 +31,7 @@ export async function GET() {
 
         return NextResponse.json({ subscribers });
     } catch (error) {
-        console.error("Error fetching subscribers:", error);
+        console.error("Error fetching subscribers");
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

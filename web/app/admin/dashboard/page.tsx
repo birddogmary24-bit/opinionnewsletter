@@ -161,7 +161,7 @@ export default function AdminDashboard() {
     };
 
     const handleLogout = async () => {
-        document.cookie = 'admin_session=; Max-Age=0; path=/;';
+        document.cookie = 'admin_session=; Max-Age=0; path=/; SameSite=Strict;';
         router.push('/admin');
     };
 

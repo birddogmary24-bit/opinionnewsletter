@@ -110,8 +110,8 @@ export async function POST(request: Request) {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: process.env.GMAIL_USER || 'placeholder@gmail.com',
-                pass: process.env.GMAIL_APP_PASSWORD || 'placeholder_password',
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_APP_PASSWORD,
             },
         });
 
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
 
         // 8. Send Emails
         if (!process.env.GMAIL_USER) {
-            console.log("⚠️ Simulation Mode: Would send to", recipients.length, "recipients");
+            // Simulation mode - GMAIL_USER not configured
             return NextResponse.json({ success: true, count: recipients.length, simulated: true });
         }
 
@@ -211,7 +211,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, count: recipients.length });
 
     } catch (error) {
-        console.error("Sending error:", error);
+        console.error("Newsletter sending error");
         // Log Error
         try {
             await db.collection('mail_history').add({

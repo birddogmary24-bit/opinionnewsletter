@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { FieldValue } from 'firebase-admin/firestore';
+import crypto from 'crypto';
+
+function hashPII(value: string): string {
+    return crypto.createHash('sha256').update(value).digest('hex').substring(0, 16);
+}
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -10,13 +15,15 @@ export async function GET(request: Request) {
         try {
             const ip = request.headers.get('x-forwarded-for') || 'unknown';
             const ua = request.headers.get('user-agent') || 'unknown';
+            const ipHash = hashPII(ip);
+            const uaHash = hashPII(ua);
 
             // 1. Always record Email PV (Page View for the Email)
             await db.collection('tracking_events').add({
                 type: 'email_pv',
                 mailId,
-                ip,
-                ua,
+                ipHash,
+                uaHash,
                 timestamp: FieldValue.serverTimestamp(),
             });
 
@@ -27,48 +34,41 @@ export async function GET(request: Request) {
 
             const sid = searchParams.get('sid');
 
-            // 2. Check for Unique Open (UV) 
-            // If sid (Subscriber ID) is provided, use it for a perfect UV.
-            // If not (e.g. legacy or web), fallback to IP+UA hash.
-            const identity = sid || Buffer.from(ip + ua).toString('base64').substring(0, 50).replace(/\//g, '_');
+            // 2. Check for Unique Open (UV)
+            const identity = sid || crypto.createHash('sha256').update(ip + ua).digest('hex').substring(0, 32);
             const uvId = `${mailId}_${identity}`;
 
             const uvRef = db.collection('unique_opens').doc(uvId);
             const uvDoc = await uvRef.get();
 
             if (!uvDoc.exists) {
-                // First time this IP/UA opens this mail
                 await uvRef.set({
                     mailId,
-                    ip,
+                    ipHash,
                     timestamp: FieldValue.serverTimestamp(),
                 });
 
-                // Also log to tracking_events for history
                 await db.collection('tracking_events').add({
                     type: 'open',
                     mailId,
-                    ip,
-                    ua,
+                    ipHash,
+                    uaHash,
                     timestamp: FieldValue.serverTimestamp(),
                 });
 
-                // Increment open_count (which now represents UV)
                 await db.collection('mail_history').doc(mailId).update({
                     open_count: FieldValue.increment(1)
                 });
 
-                // Track in Amplitude
+                // Track in Amplitude (without PII)
                 const { trackAmplitudeEvent } = await import('@/lib/amplitude');
                 await trackAmplitudeEvent('Email Open', identity, {
                     mailId,
                     sid: sid || 'none',
-                    ip,
-                    ua
                 });
             }
         } catch (error) {
-            console.error("Tracking Error:", error);
+            console.error("Tracking Error");
         }
     }
 

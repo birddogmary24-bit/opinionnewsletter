@@ -1,9 +1,14 @@
 import crypto from 'crypto';
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '12345678901234567890123456789012'; // Must be 32 chars
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 32) {
+    console.error('ENCRYPTION_KEY environment variable must be set (32 characters)');
+}
+
 const IV_LENGTH = 16;
 
 export function encryptEmail(text: string) {
+    if (!ENCRYPTION_KEY) throw new Error('ENCRYPTION_KEY is not configured');
     const iv = crypto.randomBytes(IV_LENGTH);
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
     let encrypted = cipher.update(text);
@@ -14,6 +19,7 @@ export function encryptEmail(text: string) {
 export function decryptEmail(text: string) {
     if (!text.includes(':')) return text; // Helper for legacy/plaintext
     try {
+        if (!ENCRYPTION_KEY) throw new Error('ENCRYPTION_KEY is not configured');
         const textParts = text.split(':');
         const iv = Buffer.from(textParts.shift()!, 'hex');
         const encryptedText = Buffer.from(textParts.join(':'), 'hex');
@@ -21,9 +27,9 @@ export function decryptEmail(text: string) {
         let decrypted = decipher.update(encryptedText);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();
-    } catch (e) {
-        console.error("Decryption failed", e);
-        return null; // Or return original text if we assume mixed data
+    } catch {
+        console.error("Decryption failed");
+        return null;
     }
 }
 
