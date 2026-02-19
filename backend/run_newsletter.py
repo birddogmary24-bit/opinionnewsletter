@@ -14,21 +14,21 @@ def run_newsletter_job(is_production=False):
     print(f"🚀 Starting Newsletter Delivery Job [{mode_text}]...")
     db = get_db()
     
-    # 1. Fetch Latest Content (Within last 24h OR recently updated)
-    # Note: We look back 26 hours to catch everything from the previous morning's crawl
-    print("Fetching today's content (last 26h)...")
-    time_threshold = datetime.datetime.now() - datetime.timedelta(hours=26)
-    
-    docs = db.collection('contents')\
-        .where('scraped_at', '>=', time_threshold)\
-        .stream()
-    
+    # 1. Fetch Latest Content — try 26h first, fallback up to 30 days
     all_contents = []
-    for doc in docs:
-        all_contents.append(doc.to_dict())
-    
+    for hours in [26, 48, 168, 720]:
+        print(f"Fetching content (last {hours}h)...")
+        time_threshold = datetime.datetime.now() - datetime.timedelta(hours=hours)
+        docs = db.collection('contents')\
+            .where('scraped_at', '>=', time_threshold)\
+            .stream()
+        all_contents = [doc.to_dict() for doc in docs]
+        if all_contents:
+            print(f"  ✓ Found {len(all_contents)} items")
+            break
+
     if not all_contents:
-        print("⚠️ No content found in last 26h. Aborting.")
+        print("⚠️ No content found. Aborting.")
         return
 
     # Sort all by view_count DESC to prioritize quality
