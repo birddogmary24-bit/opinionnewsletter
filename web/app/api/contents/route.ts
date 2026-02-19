@@ -3,20 +3,28 @@ import { db } from '../../../lib/firebase';
 
 export async function GET() {
     try {
-        const yesterday = new Date();
-        yesterday.setHours(yesterday.getHours() - 24);
+        // Try last 24h first, fallback to 7 days if no content found
+        const thresholds = [24, 48, 168]; // hours: 1d, 2d, 7d
+        let contentsList: any[] = [];
 
-        const snapshot = await db.collection('contents')
-            .where('scraped_at', '>=', yesterday)
-            .get();
+        for (const hours of thresholds) {
+            const threshold = new Date();
+            threshold.setHours(threshold.getHours() - hours);
 
-        let contentsList = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            scraped_at: doc.data().scraped_at?.toDate().toISOString(),
-            published_at: doc.data().published_at,
-            view_count: doc.data().view_count || 0
-        }));
+            const snapshot = await db.collection('contents')
+                .where('scraped_at', '>=', threshold)
+                .get();
+
+            contentsList = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                scraped_at: doc.data().scraped_at?.toDate().toISOString(),
+                published_at: doc.data().published_at,
+                view_count: doc.data().view_count || 0
+            }));
+
+            if (contentsList.length > 0) break;
+        }
 
         // Sort by view_count DESC
         contentsList.sort((a: any, b: any) => b.view_count - a.view_count);

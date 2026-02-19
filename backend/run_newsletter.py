@@ -89,7 +89,7 @@ def run_newsletter_job(is_production=False):
     }
     
     # 1.5 Thumbnail Repair & Default Injection
-    DEFAULT_THUMB = "https://opinion-newsletter-web-810426728503.us-central1.run.app/default_thumb.png"
+    DEFAULT_THUMB = "https://opinionnewsletter-web-810426728503.asia-northeast3.run.app/default_thumb.png"
     
     def repair_thumbnail(item):
         # 1. YouTube: Always reconstruct stable URL to fix broken/expiring links
