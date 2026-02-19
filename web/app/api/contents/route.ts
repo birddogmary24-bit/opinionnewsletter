@@ -29,8 +29,16 @@ export async function GET() {
         // Sort by view_count DESC
         contentsList.sort((a: any, b: any) => b.view_count - a.view_count);
 
+        // Limit each opinion_leader to max 2 items for variety
+        const leaderCount: Record<string, number> = {};
+        const deduped = contentsList.filter((item: any) => {
+            const leader = item.opinion_leader || 'unknown';
+            leaderCount[leader] = (leaderCount[leader] || 0) + 1;
+            return leaderCount[leader] <= 2;
+        });
+
         // Limit to 30
-        const contents = contentsList.slice(0, 30);
+        const contents = deduped.slice(0, 30);
 
         return NextResponse.json({ contents });
     } catch (error) {
