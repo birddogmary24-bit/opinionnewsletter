@@ -3,8 +3,8 @@ import { db } from '../../../lib/firebase';
 
 export async function GET() {
     try {
-        // Try last 24h first, fallback to 7 days if no content found
-        const thresholds = [24, 48, 168]; // hours: 1d, 2d, 7d
+        // Try recent windows first (24h → 48h → 7d → 30d), always show latest content
+        const thresholds = [24, 48, 168, 720]; // hours: 1d, 2d, 7d, 30d
         let contentsList: any[] = [];
 
         for (const hours of thresholds) {
