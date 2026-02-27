@@ -24,8 +24,18 @@ __pycache__/
 venv/
 env/
 .env
+.env.*
+.env*.local
+.env.production
 .pytest_cache/
 *.spec
+
+# security - keys and credentials
+*.pem
+*.p12
+*-sa-key.json
+*credentials*.json
+*.secret
 
 # IDEs
 .vscode/
