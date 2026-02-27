@@ -625,7 +625,7 @@ export default function AdminDashboard() {
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
                                         <span className="text-slate-400 text-sm font-bold">연동 계정</span>
-                                        <span className="text-white font-mono text-sm">{quota?.sender || 'birddogmary24@gmail.com'}</span>
+                                        <span className="text-white font-mono text-sm">{quota?.sender || 'your.email@example.com'}</span>
                                     </div>
                                     <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
                                         <span className="text-slate-400 text-sm font-bold">일일 발송 제한</span>

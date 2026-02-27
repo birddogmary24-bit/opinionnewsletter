@@ -15,7 +15,7 @@ export default function AmplitudeTracker() {
         <>
             {/* New Amplitude Script with Autocapture & Session Replay */}
             <Script
-                src="https://cdn.amplitude.com/script/8ea3ecbd77bd681c16097fe2fc257c82.js"
+                src="https://cdn.amplitude.com/script/YOUR_AMPLITUDE_API_KEY.js"
                 strategy="afterInteractive"
             />
             <Script id="amplitude-init" strategy="afterInteractive">
@@ -24,7 +24,7 @@ export default function AmplitudeTracker() {
                         function initAmplitude() {
                             if (window.amplitude && window.sessionReplay && window.amplitude.add) {
                                 window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));
-                                window.amplitude.init('8ea3ecbd77bd681c16097fe2fc257c82', {
+                                window.amplitude.init('YOUR_AMPLITUDE_API_KEY', {
                                     "fetchRemoteConfig": true,
                                     "autocapture": {
                                         "attribution": true,
