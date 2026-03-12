@@ -2,7 +2,7 @@
 
 ## 세션 개요
 
-뉴스레터 구독/이메일 전송 버그 수정, 자동 발송 시스템 구축, 배포 스크립트 개선, Cloud Run 재배포 완료. GitHub Actions CI/CD 파이프라인 구축 및 실수 방지용 커스텀 스킬 추가.
+뉴스레터 구독/이메일 전송 버그 수정, 자동 발송 시스템 구축, 배포 스크립트 개선, Cloud Run 재배포 완료. GitHub Actions CI/CD 파이프라인 구축, 실수 방지용 커스텀 스킬 추가, 세션 종료 자동화(memory.md + /session-end) 구축.
 
 ## 작업 내역
 
@@ -112,24 +112,53 @@
 - 수동 배포를 폴백 옵션으로 변경
 - Custom Skills 섹션 추가
 
+### 9. 세션 종료 자동화 (`b5f0339`)
+
+**신규 파일:**
+- `memory.md` - 프로젝트 핵심 정보, 과거 이슈/교훈, 미완료 작업 기록
+- `.claude/skills/session-end/SKILL.md` - `/session-end` 명령어
+
+**변경 내용:**
+- 세션 종료 시 자동으로: 미커밋 확인 → 세션 로그 생성 → memory.md 업데이트 → 커밋/push
+- CLAUDE.md에 Session Rules 섹션 추가
+- 프로젝트 레벨 설정으로 클라우드 환경에서도 세션 간 정보 유지 보장
+
 ## 향후 작업 (TODO)
 
-- [x] GitHub Actions 자동 배포 파이프라인 구축 → 완료 (활성화하려면 GCP 서비스 계정 + GitHub Secrets 설정 필요)
-- [ ] GCP 서비스 계정 생성 및 GitHub Secrets 등록 (1회 수동 설정)
+- [x] GitHub Actions 자동 배포 파이프라인 구축 → 완료
+- [x] 커스텀 스킬 + 세션 종료 자동화 → 완료
+- [ ] GCP 서비스 계정 생성 및 GitHub Secrets 등록 (1회 수동 설정, GitHub Actions 활성화 필수)
 - [ ] 커스텀 도메인 연결 (URL 변경 방지)
 - [ ] 이전 URL (`810426728503`) 접속 가능 여부 확인
 
-## 변경 파일 요약 (18개 파일, +901줄 / -28줄)
+## 오늘 총 커밋: 10개
+
+```
+b5f0339 feat: 세션 종료 자동화 - memory.md + /session-end 스킬 추가
+5687fb4 docs: 세션 로그에 GitHub Actions + 커스텀 스킬 작업 내역 추가
+6502d03 feat: GitHub Actions CI/CD + 커스텀 스킬 추가
+f2e7654 docs: 2026-03-12 세션 로그 추가
+1caf816 Add CLAUDE.md with fixed deployment settings to prevent misconfiguration
+b76e3c7 fix: deploy.sh에서 고정값과 비밀값 분리
+660e90e fix: Cloud Run 서비스명/리전/URL 수정
+dd57bef feat: 자동 발송, 헬스체크, 배포 스크립트 추가
+eb747fa chore: update package-lock.json after npm install
+5f73240 fix: 뉴스레터 구독 및 이메일 전송 버그 수정
+```
+
+## 변경 파일 요약 (21개 파일)
 
 ```
 .claude/skills/deploy-check/SKILL.md   |  46 +++
 .claude/skills/deploy-status/SKILL.md  |  43 +++
+.claude/skills/session-end/SKILL.md    |  47 +++
 .claude/skills/session-log/SKILL.md    |  50 +++
 .github/workflows/deploy.yml           | 113 +++
 .github/workflows/pr-check.yml         |  30 +++
-CLAUDE.md                              |  63 +++
+CLAUDE.md                              |  70 +++
 deploy.sh                              | 145 +++
-docs/2026-03-12-session-log.md         | 102 +++
+docs/2026-03-12-session-log.md         | 143 +++
+memory.md                              |  54 +++
 web/.env.example                       |  39 +++
 web/Dockerfile                         |   1 +
 web/app/api/admin/send/route.ts        |   4 +-
