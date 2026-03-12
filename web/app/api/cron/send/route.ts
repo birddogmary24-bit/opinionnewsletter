@@ -119,12 +119,11 @@ export async function POST(request: Request) {
         const remainingForCategories = sortedByView.slice(3);
 
         const categoryStories: Record<string, any[]> = {};
-        const categories = ['경제', '정치', '사회', '교육', '문화', 'IT/테크'];
+        const categories = ['정치', '경제', '사회', '부동산', 'IT', '과학', '문화', '지식'];
 
         categories.forEach(category => {
             const categoryItems = remainingForCategories.filter((c: any) => {
-                const text = `${c.opinion_leader} ${c.title}`.toLowerCase();
-                return text.includes(category.toLowerCase());
+                return c.category === category;
             }).slice(0, 5);
 
             if (categoryItems.length > 0) {
