@@ -1,0 +1,50 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    name: Deploy Web to Cloud Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push Docker image
+        run: |
+          gcloud config set project opnionnewsletter
+          cd web
+          gcloud builds submit --tag "gcr.io/opnionnewsletter/opinionnewsletter-web" .
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy opinionnewsletter-web \
+            --image "gcr.io/opnionnewsletter/opinionnewsletter-web" \
+            --region asia-northeast3 \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "\
+          GMAIL_USER=${{ secrets.GMAIL_USER }},\
+          GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }},\
+          ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }},\
+          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }},\
+          CRON_SECRET=${{ secrets.CRON_SECRET }},\
+          NODE_ENV=production"
+
+      - name: Show deployed URL
+        run: |
+          echo "✅ 배포 완료!"
+          echo "👤 어드민: https://opinionnewsletter-web-810426728503.asia-northeast3.run.app/admin"
