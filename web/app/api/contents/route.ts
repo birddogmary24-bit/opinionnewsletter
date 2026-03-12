@@ -5,7 +5,8 @@ export async function GET() {
     try {
         // Try recent windows first (24h → 48h → 7d → 30d), always show latest content
         const thresholds = [24, 48, 168, 720]; // hours: 1d, 2d, 7d, 30d
-        let contentsList: any[] = [];
+        type ContentItem = { id: string; view_count: number; opinion_leader?: string; [key: string]: unknown; };
+        let contentsList: ContentItem[] = [];
 
         for (const hours of thresholds) {
             const threshold = new Date();
@@ -27,11 +28,11 @@ export async function GET() {
         }
 
         // Sort by view_count DESC
-        contentsList.sort((a: any, b: any) => b.view_count - a.view_count);
+        contentsList.sort((a, b) => b.view_count - a.view_count);
 
         // Limit each opinion_leader to max 2 items for variety
         const leaderCount: Record<string, number> = {};
-        const deduped = contentsList.filter((item: any) => {
+        const deduped = contentsList.filter((item) => {
             const leader = item.opinion_leader || 'unknown';
             leaderCount[leader] = (leaderCount[leader] || 0) + 1;
             return leaderCount[leader] <= 2;
