@@ -211,7 +211,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, count: recipients.length });
 
     } catch (error) {
-        console.error("Newsletter sending error");
+        console.error("Newsletter sending error:", error instanceof Error ? error.message : String(error));
         // Log Error
         try {
             await db.collection('mail_history').add({
