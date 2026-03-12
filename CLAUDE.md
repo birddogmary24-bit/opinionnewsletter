@@ -29,12 +29,22 @@ opinionnewsletter/
 
 ## Deployment
 
-Run from project root on local Mac:
+### 자동 배포 (GitHub Actions) - 권장
+`main` 브랜치에 `web/` 디렉토리 변경사항이 push되면 자동 배포됩니다.
+- Lint/타입체크 → Docker 빌드 → Cloud Run 배포 → 헬스체크 → 실패 시 롤백
+- GitHub Secrets에 비밀값 설정 필요 (GCP_SA_KEY, GMAIL_USER 등)
+
+### 수동 배포 (폴백)
 ```bash
 ./deploy.sh
 ```
+Mac에서 실행. Docker build, Cloud Run deploy, Cloud Scheduler 설정 포함.
 
-The script handles: Docker build, Cloud Run deploy, Cloud Scheduler setup (daily 7:00 AM KST).
+## Custom Skills
+
+- `/deploy-check` - 배포 설정값(서비스명/리전/프로젝트ID) 검증
+- `/deploy-status` - 현재 배포 상태 및 헬스체크 확인
+- `/session-log` - 오늘 작업 내역을 docs/에 세션 로그로 생성
 
 ## Key API Endpoints
 
