@@ -6,74 +6,91 @@ set -e
 # ============================================
 #
 # 사전 준비:
-#   1. gcloud CLI 설치: https://cloud.google.com/sdk/docs/install
-#   2. 로그인: gcloud auth login
-#   3. 이 파일의 환경변수 값 채우기 (아래 EDIT HERE 섹션)
+#   1. gcloud CLI 설치 및 로그인: gcloud auth login
+#   2. .env.deploy 파일에 비밀값 설정 (최초 1회)
 #
-# 실행 방법:
-#   chmod +x deploy.sh
-#   ./deploy.sh
-#
+# 실행: ./deploy.sh
 # ============================================
 
-# ======== EDIT HERE: 환경변수 설정 ========
+# ======== 고정값 (절대 수정 금지) ========
 PROJECT_ID="opnionnewsletter"
 REGION="asia-northeast3"
 SERVICE_NAME="opinionnewsletter-web"
+# =========================================
 
-# Gmail 설정 (필수)
-# Gmail 앱 비밀번호 생성: https://myaccount.google.com/apppasswords
-GMAIL_USER="your-email@gmail.com"
-GMAIL_APP_PASSWORD="your-app-password"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/.env.deploy"
 
-# 암호화 키 (필수, 정확히 32자)
-# 생성: node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
-ENCRYPTION_KEY="00000000000000000000000000000000"
+# .env.deploy 파일 확인
+if [ ! -f "$ENV_FILE" ]; then
+    echo ""
+    echo "========================================="
+    echo "  최초 설정이 필요합니다"
+    echo "========================================="
+    echo ""
+    echo ".env.deploy 파일이 없습니다. 자동으로 생성합니다."
+    echo "각 항목을 입력해주세요."
+    echo ""
 
-# 관리자 비밀번호 (필수)
-ADMIN_PASSWORD="your-admin-password"
+    read -rp "Gmail 주소: " input_gmail_user
+    read -rp "Gmail 앱 비밀번호 (https://myaccount.google.com/apppasswords): " input_gmail_pass
+    read -rp "관리자 비밀번호 (원하는 값): " input_admin_pass
 
-# 크론 시크릿 (필수, 자동 발송용)
-# 생성: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-CRON_SECRET="your-cron-secret"
+    # 자동 생성 가능한 키는 자동으로 생성
+    input_encryption_key=$(node -e "console.log(require('crypto').randomBytes(16).toString('hex'))" 2>/dev/null || openssl rand -hex 16)
+    input_cron_secret=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))" 2>/dev/null || openssl rand -hex 32)
 
-# ======== 여기까지 수정 ========
+    cat > "$ENV_FILE" << ENVEOF
+# 오뉴 뉴스레터 배포 비밀값 (이 파일은 git에 포함되지 않습니다)
+GMAIL_USER="$input_gmail_user"
+GMAIL_APP_PASSWORD="$input_gmail_pass"
+ENCRYPTION_KEY="$input_encryption_key"
+ADMIN_PASSWORD="$input_admin_pass"
+CRON_SECRET="$input_cron_secret"
+ENVEOF
+
+    echo ""
+    echo ".env.deploy 파일이 생성되었습니다."
+    echo "ENCRYPTION_KEY와 CRON_SECRET은 자동 생성되었습니다."
+    echo ""
+fi
+
+# .env.deploy 로드
+source "$ENV_FILE"
+
+# 필수값 확인
+missing=false
+if [ -z "$GMAIL_USER" ]; then echo "GMAIL_USER가 비어있습니다."; missing=true; fi
+if [ -z "$GMAIL_APP_PASSWORD" ]; then echo "GMAIL_APP_PASSWORD가 비어있습니다."; missing=true; fi
+if [ -z "$ENCRYPTION_KEY" ]; then echo "ENCRYPTION_KEY가 비어있습니다."; missing=true; fi
+if [ -z "$ADMIN_PASSWORD" ]; then echo "ADMIN_PASSWORD가 비어있습니다."; missing=true; fi
+if [ -z "$CRON_SECRET" ]; then echo "CRON_SECRET이 비어있습니다."; missing=true; fi
+
+if [ "$missing" = true ]; then
+    echo ""
+    echo ".env.deploy 파일을 확인해주세요: $ENV_FILE"
+    exit 1
+fi
 
 echo ""
 echo "========================================="
 echo "  오뉴 뉴스레터 배포 시작"
 echo "========================================="
 echo ""
-
-# 값 확인
-if [ "$GMAIL_USER" = "your-email@gmail.com" ]; then
-    echo "❌ 오류: GMAIL_USER를 실제 Gmail 주소로 변경해주세요."
-    echo "   deploy.sh 파일을 열어 'EDIT HERE' 섹션의 값을 채워주세요."
-    exit 1
-fi
-
-if [ "$ENCRYPTION_KEY" = "00000000000000000000000000000000" ]; then
-    echo "❌ 오류: ENCRYPTION_KEY를 실제 값으로 변경해주세요."
-    echo "   생성 명령어: node -e \"console.log(require('crypto').randomBytes(16).toString('hex'))\""
-    exit 1
-fi
-
-if [ "$CRON_SECRET" = "your-cron-secret" ]; then
-    echo "❌ 오류: CRON_SECRET을 실제 값으로 변경해주세요."
-    echo "   생성 명령어: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
-    exit 1
-fi
+echo "  프로젝트: $PROJECT_ID"
+echo "  리전:     $REGION"
+echo "  서비스:   $SERVICE_NAME"
+echo "  Gmail:    $GMAIL_USER"
+echo ""
 
 # 프로젝트 설정
-echo "📌 프로젝트 설정: $PROJECT_ID"
 gcloud config set project "$PROJECT_ID"
 
 # Docker 이미지 빌드 및 푸시
-echo ""
 echo "🔨 Docker 이미지 빌드 중..."
-cd web
+cd "$SCRIPT_DIR/web"
 gcloud builds submit --tag "gcr.io/$PROJECT_ID/$SERVICE_NAME" .
-cd ..
+cd "$SCRIPT_DIR"
 
 # Cloud Run 배포
 echo ""
