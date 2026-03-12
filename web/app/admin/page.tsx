@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Loader2, ArrowRight } from 'lucide-react';
 
@@ -9,6 +9,16 @@ export default function AdminLogin() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        fetch('/api/admin/subscribers')
+            .then(res => {
+                if (res.status === 200) {
+                    router.replace('/admin/dashboard');
+                }
+            })
+            .catch(() => {});
+    }, [router]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

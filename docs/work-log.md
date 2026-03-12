@@ -2,6 +2,109 @@
 
 ---
 
+## 2026-03-12 | 어드민 대시보드 버그 수정 및 배포 자동화
+
+### 요청 사항
+- `https://opinion-newsletter-web-810426728503.us-central1.run.app/admin` 접속 불가 문제 확인 및 수정
+
+---
+
+### 원인 분석
+
+#### 1. 서비스 URL 불일치 (접속 불가 주원인)
+
+이전 세션(`660e90e`)에서 Cloud Run 서비스 이름과 리전이 변경되었으나, 사용자는 구 URL로 계속 접속 시도 중이었음.
+
+| | 구 URL (접속 불가) | 신 URL (정상) |
+|---|---|---|
+| 서비스명 | `opinion-newsletter-web` | `opinionnewsletter-web` |
+| 리전 | `us-central1` | `asia-northeast3` |
+| URL | `opinion-newsletter-web-810426728503.us-central1.run.app` | `opinionnewsletter-web-810426728503.asia-northeast3.run.app` |
+
+#### 2. 로그아웃 버튼 완전 미작동 (Critical 버그)
+
+`admin_session` 쿠키가 `httpOnly: true`로 설정된 상태에서, 기존 `handleLogout`이 JavaScript의 `document.cookie`로 쿠키를 삭제하려 했으나 브라우저가 `httpOnly` 쿠키에 대한 JS 접근을 차단하므로 로그아웃이 전혀 동작하지 않음.
+
+```javascript
+// Before (동작 안 함 - httpOnly 쿠키는 JS에서 삭제 불가)
+document.cookie = 'admin_session=; Max-Age=0; path=/; SameSite=Strict;';
+
+// After (서버 API를 통해 삭제)
+await fetch('/api/admin/logout', { method: 'POST' });
+```
+
+#### 3. 기타 버그들
+
+- 이미 로그인된 사용자가 `/admin` 재방문 시 로그인 폼 재노출 (UX 문제)
+- 통계 탭 빈 상태 행의 `colSpan={6}` → 실제 7컬럼 테이블
+- 분석 탭 `recipient_count === 0`일 때 `NaN%` 표시
+
+---
+
+### 수정 내용
+
+#### 1. `/api/admin/logout` 라우트 신규 추가
+`web/app/api/admin/logout/route.ts` 생성 — 서버 측에서 `admin_session` 쿠키 만료 처리
+
+#### 2. `handleLogout` 함수 수정
+`web/app/admin/dashboard/page.tsx` — `document.cookie` 방식 제거, `/api/admin/logout` POST 호출로 변경
+
+#### 3. 로그인 페이지 인증 상태 자동 감지
+`web/app/admin/page.tsx` — `useEffect`로 `/api/admin/subscribers` 호출, 세션 유효 시 `/admin/dashboard`로 자동 리다이렉트
+
+#### 4. `colSpan` 버그 수정
+`web/app/admin/dashboard/page.tsx` 통계 탭 빈 상태 `colSpan={6}` → `colSpan={7}`
+
+#### 5. Division by zero 방지
+`web/app/admin/dashboard/page.tsx` 분석 탭 오픈율·클릭률 계산 시 `recipient_count > 0` 가드 추가
+
+#### 6. GitHub Actions 자동 배포 워크플로우 추가
+`.github/workflows/deploy.yml` 생성 — `main`/`master` 브랜치 push 시 Cloud Run(`asia-northeast3`) 자동 배포
+
+---
+
+### 배포 절차
+
+#### GitHub Actions 자동 배포 (최초 1회 설정)
+
+GitHub 저장소 → **Settings → Secrets and variables → Actions** → 아래 6개 Secret 등록:
+
+| Secret | 내용 |
+|--------|------|
+| `GCP_SERVICE_ACCOUNT_KEY` | GCP 서비스 계정 JSON 키 |
+| `GMAIL_USER` | Gmail 주소 |
+| `GMAIL_APP_PASSWORD` | Gmail 앱 비밀번호 |
+| `ENCRYPTION_KEY` | 32자리 암호화 키 |
+| `ADMIN_PASSWORD` | 어드민 로그인 비밀번호 |
+| `CRON_SECRET` | 자동 발송용 시크릿 |
+
+설정 완료 후 main에 머지하면 자동 배포됨.
+
+#### 어드민 접속 URL (배포 후)
+```
+https://opinionnewsletter-web-810426728503.asia-northeast3.run.app/admin
+```
+
+---
+
+### 관련 파일
+
+| 파일 | 변경 유형 | 설명 |
+|------|-----------|------|
+| `web/app/api/admin/logout/route.ts` | 신규 | 서버 측 로그아웃 API |
+| `web/app/admin/dashboard/page.tsx` | 수정 | 로그아웃·colSpan·NaN% 버그 수정 |
+| `web/app/admin/page.tsx` | 수정 | 인증 상태 감지 및 자동 리다이렉트 |
+| `.github/workflows/deploy.yml` | 신규 | Cloud Run 자동 배포 워크플로우 |
+
+### 관련 커밋
+
+| 커밋 | 설명 |
+|------|------|
+| `363d677` | fix: admin 대시보드 주요 버그 수정 (로그아웃·colSpan·NaN%) |
+| `3d93222` | ci: GitHub Actions 자동 배포 워크플로우 추가 |
+
+---
+
 ## 2026-03-12 | 어드민 구독자 목록 이메일 "error" 표시 버그 수정 및 암호화 키 마이그레이션
 
 ### 증상

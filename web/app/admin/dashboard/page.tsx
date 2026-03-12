@@ -161,7 +161,7 @@ export default function AdminDashboard() {
     };
 
     const handleLogout = async () => {
-        document.cookie = 'admin_session=; Max-Age=0; path=/; SameSite=Strict;';
+        await fetch('/api/admin/logout', { method: 'POST' });
         router.push('/admin');
     };
 
@@ -537,7 +537,7 @@ export default function AdminDashboard() {
                                             );
 
                                             return sortedDates.length === 0 ? (
-                                                <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-500 font-bold italic">통계 데이터가 없습니다.</td></tr>
+                                                <tr><td colSpan={7} className="px-8 py-20 text-center text-slate-500 font-bold italic">통계 데이터가 없습니다.</td></tr>
                                             ) : (
                                                 sortedDates.map((date) => {
                                                     // Aggregate mail stats for this date (KST)
@@ -696,13 +696,13 @@ export default function AdminDashboard() {
                                                     <td className="px-8 py-5">
                                                         <div className="flex items-center gap-2">
                                                             <div className="w-12 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                                                <div className="h-full bg-blue-500" style={{ width: `${Math.round((log.open_count / log.recipient_count) * 100)}%` }}></div>
+                                                                <div className="h-full bg-blue-500" style={{ width: `${log.recipient_count > 0 ? Math.round((log.open_count / log.recipient_count) * 100) : 0}%` }}></div>
                                                             </div>
-                                                            <span className="font-black text-blue-400">{Math.round((log.open_count / log.recipient_count) * 100)}%</span>
+                                                            <span className="font-black text-blue-400">{log.recipient_count > 0 ? Math.round((log.open_count / log.recipient_count) * 100) : 0}%</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-5 text-right font-black text-purple-400">
-                                                        {Math.round((log.click_count / log.recipient_count) * 1000) / 10}%
+                                                        {log.recipient_count > 0 ? Math.round((log.click_count / log.recipient_count) * 1000) / 10 : 0}%
                                                     </td>
                                                 </tr>
                                             ))
