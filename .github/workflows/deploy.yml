@@ -6,6 +6,11 @@ on:
     paths:
       - 'web/**'
       - '.github/workflows/deploy.yml'
+  workflow_run:
+    workflows: ["Auto-merge Claude branches to main"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-production
