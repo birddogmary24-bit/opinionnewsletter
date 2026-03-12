@@ -40,7 +40,7 @@ export default function AdminDashboard() {
     const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
     const [history, setHistory] = useState<MailLog[]>([]);
     const [webStats, setWebStats] = useState<Record<string, WebStat>>({});
-    const [chartData, setChartData] = useState<any[]>([]);
+    const [chartData, setChartData] = useState<Record<string, unknown>[]>([]);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [stats, setStats] = useState({ total: 0, active: 0, test: 0, production: 0 });
@@ -70,9 +70,9 @@ export default function AdminDashboard() {
                 setSubscribers(data.subscribers);
                 setStats({
                     total: data.subscribers.length,
-                    active: data.subscribers.filter((s: any) => s.status === 'active').length,
-                    test: data.subscribers.filter((s: any) => s.is_test).length,
-                    production: data.subscribers.filter((s: any) => !s.is_test).length
+                    active: data.subscribers.filter((s: Subscriber) => s.status === 'active').length,
+                    test: data.subscribers.filter((s: Subscriber) => s.is_test).length,
+                    production: data.subscribers.filter((s: Subscriber) => !s.is_test).length
                 });
             }
         } catch (error) {
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
                             ].map(tab => (
                                 <button
                                     key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as any)}
+                                    onClick={() => setActiveTab(tab.id as 'subscribers' | 'stats' | 'history' | 'analytics')}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
                                 >
                                     <tab.icon className="w-4 h-4" />
