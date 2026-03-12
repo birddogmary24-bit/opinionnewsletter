@@ -19,7 +19,7 @@ interface Content {
 export default function Home() {
     const [email, setEmail] = useState('');
     const [agreed, setAgreed] = useState(false);
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'duplicate'>('idle');
     const [contents, setContents] = useState<Content[]>([]);
     const [loadingContent, setLoadingContent] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
@@ -91,6 +91,8 @@ export default function Home() {
                 setAgreed(false);
                 // Redirect to onboarding with the subscriber ID
                 window.location.href = `/onboarding?subscriberId=${data.id}`;
+            } else if (res.status === 409) {
+                setStatus('duplicate');
             } else {
                 setStatus('error');
             }
@@ -185,7 +187,10 @@ export default function Home() {
                                             className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder:text-white/50 px-4 py-3 text-base md:text-lg outline-none"
                                             required
                                             value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            onChange={(e) => {
+                                                setEmail(e.target.value);
+                                                if (status === 'error' || status === 'duplicate') setStatus('idle');
+                                            }}
                                         />
                                     </div>
                                     <button
@@ -195,7 +200,8 @@ export default function Home() {
                                     >
                                         {status === 'loading' ? <Loader2 className="w-5 h-5 animate-spin" /> :
                                             status === 'success' ? <Check className="w-5 h-5" /> :
-                                                '무료 구독'}
+                                                status === 'error' || status === 'duplicate' ? '다시 시도' :
+                                                    '무료 구독'}
                                     </button>
                                 </div>
                             </div>
@@ -219,6 +225,20 @@ export default function Home() {
                                 <div className="flex items-center justify-center space-x-3 text-green-400 font-bold text-base bg-green-500/10 border-2 border-green-500/30 p-4 rounded-2xl animate-fade-in shadow-2xl shadow-green-500/10">
                                     <Check className="w-5 h-5" />
                                     <span>구독되었습니다! 내일부터 배달됩니다.</span>
+                                </div>
+                            )}
+
+                            {status === 'error' && (
+                                <div className="flex items-center justify-center space-x-3 text-red-400 font-bold text-base bg-red-500/10 border-2 border-red-500/30 p-4 rounded-2xl animate-fade-in shadow-2xl shadow-red-500/10">
+                                    <AlertCircle className="w-5 h-5" />
+                                    <span>구독 처리 중 오류가 발생했습니다. 다시 시도해주세요.</span>
+                                </div>
+                            )}
+
+                            {status === 'duplicate' && (
+                                <div className="flex items-center justify-center space-x-3 text-yellow-400 font-bold text-base bg-yellow-500/10 border-2 border-yellow-500/30 p-4 rounded-2xl animate-fade-in shadow-2xl shadow-yellow-500/10">
+                                    <AlertCircle className="w-5 h-5" />
+                                    <span>이미 구독 중인 이메일입니다.</span>
                                 </div>
                             )}
                         </form>
