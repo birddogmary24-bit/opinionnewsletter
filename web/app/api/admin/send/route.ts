@@ -165,13 +165,13 @@ export async function POST(request: Request) {
                 const preferredChannels = new Set(recipient.preferences.channels);
 
                 // Find all contents that match preferences
-                const preferredContent = contents.filter((c: any) => preferredChannels.has(c.opinion_leader));
+                const preferredContent = contents.filter((c) => preferredChannels.has(c.opinion_leader));
 
                 // Sort preferred content by view count (or latest)
-                preferredContent.sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
+                preferredContent.sort((a, b) => ((b.view_count as number) || 0) - ((a.view_count as number) || 0));
 
                 // Construct the top 3: prioritize preferred, fill with default top
-                const finalTop: any[] = [...preferredContent];
+                const finalTop: ContentItem[] = [...preferredContent];
 
                 // Prevent duplicates if we need to fill from default
                 const usedIds = new Set(finalTop.map(c => c.url)); // using URL as unique ID if ID not available

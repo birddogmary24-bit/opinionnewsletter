@@ -50,7 +50,8 @@ export async function POST(request: Request) {
             .limit(30)
             .get();
 
-        const contents = contentSnapshot.docs.map(d => d.data());
+        type ContentItem = { view_count?: number; opinion_leader?: string; title?: string; url?: string; [key: string]: unknown; };
+        const contents = contentSnapshot.docs.map(d => d.data()) as ContentItem[];
 
         if (contents.length === 0) {
             return NextResponse.json({ success: true, message: 'No content to send', count: 0 });
@@ -114,11 +115,11 @@ export async function POST(request: Request) {
         });
 
         // 7. 콘텐츠 정렬 및 분류
-        const sortedByView = contents.sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
+        const sortedByView = contents.sort((a, b) => ((b.view_count as number) || 0) - ((a.view_count as number) || 0));
         const defaultTopStories = sortedByView.slice(0, 3);
         const remainingForCategories = sortedByView.slice(3);
 
-        const categoryStories: Record<string, any[]> = {};
+        const categoryStories: Record<string, ContentItem[]> = {};
         const categories = ['경제', '정치', '사회', '교육', '문화', 'IT/테크'];
 
         categories.forEach(category => {
