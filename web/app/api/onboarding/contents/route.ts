@@ -14,7 +14,8 @@ export async function GET() {
             .get();
 
         const processedChannels = new Set();
-        const uniqueContents: any[] = [];
+        type ContentData = { id: string; opinion_leader?: string; scraped_at?: string; [key: string]: unknown; };
+        const uniqueContents: ContentData[] = [];
 
         snapshot.docs.forEach(doc => {
             const data = doc.data();

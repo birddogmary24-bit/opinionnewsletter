@@ -1,4 +1,4 @@
-export async function trackAmplitudeEvent(eventType: string, userId: string, eventProperties: any = {}) {
+export async function trackAmplitudeEvent(eventType: string, userId: string, eventProperties: Record<string, unknown> = {}) {
     const API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
     if (!API_KEY) return;
 
