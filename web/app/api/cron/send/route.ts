@@ -123,7 +123,7 @@ export async function POST(request: Request) {
         const categories = ['경제', '정치', '사회', '교육', '문화', 'IT/테크'];
 
         categories.forEach(category => {
-            const categoryItems = remainingForCategories.filter((c: any) => {
+            const categoryItems = remainingForCategories.filter((c) => {
                 const text = `${c.opinion_leader} ${c.title}`.toLowerCase();
                 return text.includes(category.toLowerCase());
             }).slice(0, 5);
@@ -156,10 +156,10 @@ export async function POST(request: Request) {
                 if (recipient.preferences?.channels && recipient.preferences.channels.length > 0) {
                     const preferredChannels = new Set(recipient.preferences.channels);
                     const preferredContent = contents
-                        .filter((c: any) => preferredChannels.has(c.opinion_leader))
-                        .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
+                        .filter((c) => preferredChannels.has(c.opinion_leader))
+                        .sort((a, b) => ((b.view_count as number) || 0) - ((a.view_count as number) || 0));
 
-                    const finalTop: any[] = [...preferredContent];
+                    const finalTop: ContentItem[] = [...preferredContent];
                     const usedIds = new Set(finalTop.map(c => c.url));
 
                     for (const item of sortedByView) {

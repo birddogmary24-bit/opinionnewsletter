@@ -12,6 +12,7 @@
  * Cloud Run (ADC 인증) 환경에서는 SERVICE_ACCOUNT_PATH 불필요.
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
 const admin = require('firebase-admin');
 const crypto = require('crypto');
 const fs = require('fs');
