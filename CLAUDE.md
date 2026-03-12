@@ -45,6 +45,13 @@ Mac에서 실행. Docker build, Cloud Run deploy, Cloud Scheduler 설정 포함.
 - `/deploy-check` - 배포 설정값(서비스명/리전/프로젝트ID) 검증
 - `/deploy-status` - 현재 배포 상태 및 헬스체크 확인
 - `/session-log` - 오늘 작업 내역을 docs/에 세션 로그로 생성
+- `/session-end` - 세션 종료 시 로그 기록 + memory.md 업데이트 + 커밋/push
+
+## Session Rules
+
+- 세션 종료 요청 시 반드시 `/session-end` 스킬 실행
+- 중요 교훈/이슈 발견 시 `memory.md`에 기록
+- 배포 관련 작업 전 `/deploy-check`로 설정값 검증
 
 ## Key API Endpoints
 
