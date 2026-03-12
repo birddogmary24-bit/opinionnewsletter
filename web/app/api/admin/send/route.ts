@@ -165,7 +165,7 @@ export async function POST(request: Request) {
                 const preferredChannels = new Set(recipient.preferences.channels);
 
                 // Find all contents that match preferences
-                const preferredContent = contents.filter((c) => preferredChannels.has(c.opinion_leader));
+                const preferredContent = contents.filter((c) => preferredChannels.has(c.opinion_leader ?? ''));
 
                 // Sort preferred content by view count (or latest)
                 preferredContent.sort((a, b) => ((b.view_count as number) || 0) - ((a.view_count as number) || 0));

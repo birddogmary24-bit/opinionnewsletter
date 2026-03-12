@@ -156,7 +156,7 @@ export async function POST(request: Request) {
                 if (recipient.preferences?.channels && recipient.preferences.channels.length > 0) {
                     const preferredChannels = new Set(recipient.preferences.channels);
                     const preferredContent = contents
-                        .filter((c) => preferredChannels.has(c.opinion_leader))
+                        .filter((c) => preferredChannels.has(c.opinion_leader ?? ''))
                         .sort((a, b) => ((b.view_count as number) || 0) - ((a.view_count as number) || 0));
 
                     const finalTop: ContentItem[] = [...preferredContent];
