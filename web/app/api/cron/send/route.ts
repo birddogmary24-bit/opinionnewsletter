@@ -141,7 +141,7 @@ export async function POST(request: Request) {
         const now = new Date();
         const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
         const subjectDate = `${kstDate.getMonth() + 1}/${kstDate.getDate()}`;
-        const trackingUrl = 'https://opinion-newsletter-web-810426728503.us-central1.run.app';
+        const trackingUrl = 'https://opinionnewsletter-web-810426728503.asia-northeast3.run.app';
 
         let successCount = 0;
         let failCount = 0;

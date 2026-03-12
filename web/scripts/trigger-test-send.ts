@@ -2,7 +2,7 @@
 import fetch from 'node-fetch';
 
 async function triggerTestSend() {
-    const url = 'https://opinion-newsletter-web-810426728503.us-central1.run.app/api/admin/send';
+    const url = 'https://opinionnewsletter-web-810426728503.asia-northeast3.run.app/api/admin/send';
     console.log(`Triggering test email to ${url}...`);
 
     try {

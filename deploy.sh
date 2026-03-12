@@ -18,8 +18,8 @@ set -e
 
 # ======== EDIT HERE: 환경변수 설정 ========
 PROJECT_ID="opnionnewsletter"
-REGION="us-central1"
-SERVICE_NAME="opinion-newsletter-web"
+REGION="asia-northeast3"
+SERVICE_NAME="opinionnewsletter-web"
 
 # Gmail 설정 (필수)
 # Gmail 앱 비밀번호 생성: https://myaccount.google.com/apppasswords
