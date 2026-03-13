@@ -1,0 +1,187 @@
+name: Daily Health Report
+
+on:
+  schedule:
+    # 매일 08:00 KST (= 23:00 UTC 전날)
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+
+env:
+  SERVICE_URL: https://opinionnewsletter-web-810426728503.asia-northeast3.run.app
+  REPORT_EMAIL: birddogmary24@gmail.com
+
+jobs:
+  health-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check service health
+        id: health
+        run: |
+          HTTP_CODE=$(curl -s -o /tmp/health.json -w "%{http_code}" "$SERVICE_URL/api/health" --max-time 30)
+          echo "http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            OVERALL=$(cat /tmp/health.json | jq -r '.overall // "unknown"')
+            echo "status=$OVERALL" >> $GITHUB_OUTPUT
+            echo "detail=$(cat /tmp/health.json | jq -c '.')" >> $GITHUB_OUTPUT
+          else
+            echo "status=unreachable" >> $GITHUB_OUTPUT
+            echo "detail={\"error\":\"HTTP $HTTP_CODE\"}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check main page contents
+        id: contents
+        run: |
+          HTTP_CODE=$(curl -s -o /tmp/contents.json -w "%{http_code}" "$SERVICE_URL/api/contents" --max-time 30)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            COUNT=$(cat /tmp/contents.json | jq '.contents | length')
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "count=$COUNT" >> $GITHUB_OUTPUT
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check onboarding contents
+        id: onboarding
+        run: |
+          HTTP_CODE=$(curl -s -o /tmp/onboarding.json -w "%{http_code}" "$SERVICE_URL/api/onboarding/contents" --max-time 30)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            COUNT=$(cat /tmp/onboarding.json | jq '.contents | length')
+            # Check if using fallback (id starts with "fallback-")
+            FIRST_ID=$(cat /tmp/onboarding.json | jq -r '.contents[0].id // ""')
+            if [[ "$FIRST_ID" == fallback-* ]]; then
+              echo "status=fallback" >> $GITHUB_OUTPUT
+            else
+              echo "status=ok" >> $GITHUB_OUTPUT
+            fi
+            echo "count=$COUNT" >> $GITHUB_OUTPUT
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check crawler workflow status
+        id: crawler
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RESULT=$(gh api repos/${{ github.repository }}/actions/workflows/crawler.yml/runs?per_page=1 --jq '.workflow_runs[0] | {status: .status, conclusion: .conclusion, created_at: .created_at}' 2>/dev/null || echo '{"status":"unknown","conclusion":"unknown","created_at":"N/A"}')
+          CONCLUSION=$(echo "$RESULT" | jq -r '.conclusion // "unknown"')
+          CREATED=$(echo "$RESULT" | jq -r '.created_at // "N/A"')
+          echo "conclusion=$CONCLUSION" >> $GITHUB_OUTPUT
+          echo "last_run=$CREATED" >> $GITHUB_OUTPUT
+
+      - name: Check newsletter send (mail_history)
+        id: newsletter
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' > /tmp/sa.json
+          pip install google-cloud-firestore google-auth -q
+          python3 - <<'PYEOF'
+          import json, os, datetime
+          from google.cloud import firestore
+          from google.oauth2 import service_account
+
+          creds = service_account.Credentials.from_service_account_file('/tmp/sa.json')
+          db = firestore.Client(credentials=creds, project='opnionnewsletter', database='opinionnewsletterdb')
+
+          yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=25)
+          docs = db.collection('mail_history').where('sent_at', '>=', yesterday).order_by('sent_at', direction=firestore.Query.DESCENDING).limit(1).get()
+
+          if docs:
+              data = docs[0].to_dict()
+              result = {
+                  "status": "ok",
+                  "sent_at": str(data.get('sent_at', 'N/A')),
+                  "success_count": data.get('success_count', 0),
+                  "fail_count": data.get('fail_count', 0),
+                  "total_recipients": data.get('total_recipients', 0)
+              }
+          else:
+              result = {"status": "no_send", "sent_at": "N/A", "success_count": 0, "fail_count": 0, "total_recipients": 0}
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              for k, v in result.items():
+                  f.write(f"{k}={v}\n")
+          PYEOF
+          rm -f /tmp/sa.json
+
+      - name: Send report email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USER }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "[오뉴] 일일 운영 현황 리포트 - ${{ github.event.repository.name }}"
+          to: ${{ env.REPORT_EMAIL }}
+          from: "오뉴 모니터링 <${{ secrets.GMAIL_USER }}>"
+          html_body: |
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">오뉴 일일 운영 현황 리포트</h2>
+              <p style="color: #64748b; font-size: 14px;">실행 시각: ${{ github.event.repository.updated_at || 'N/A' }} (UTC)</p>
+
+              <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                  <tr style="background: #1e293b; color: white;">
+                    <th style="padding: 12px; text-align: left;">항목</th>
+                    <th style="padding: 12px; text-align: center;">상태</th>
+                    <th style="padding: 12px; text-align: left;">상세</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px; font-weight: bold;">서비스 상태</td>
+                    <td style="padding: 12px; text-align: center;">
+                      ${{ steps.health.outputs.status == 'healthy' && '✅' || steps.health.outputs.status == 'degraded' && '⚠️' || '❌' }}
+                    </td>
+                    <td style="padding: 12px;">HTTP ${{ steps.health.outputs.http_code }} / ${{ steps.health.outputs.status }}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                    <td style="padding: 12px; font-weight: bold;">메인홈 콘텐츠</td>
+                    <td style="padding: 12px; text-align: center;">
+                      ${{ steps.contents.outputs.status == 'ok' && steps.contents.outputs.count != '0' && '✅' || '❌' }}
+                    </td>
+                    <td style="padding: 12px;">${{ steps.contents.outputs.count }}개 콘텐츠</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px; font-weight: bold;">맞춤설정 콘텐츠</td>
+                    <td style="padding: 12px; text-align: center;">
+                      ${{ steps.onboarding.outputs.status == 'ok' && '✅' || steps.onboarding.outputs.status == 'fallback' && '⚠️' || '❌' }}
+                    </td>
+                    <td style="padding: 12px;">${{ steps.onboarding.outputs.count }}개 채널 (${{ steps.onboarding.outputs.status == 'fallback' && '폴백 데이터 사용중' || '실시간 데이터' }})</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                    <td style="padding: 12px; font-weight: bold;">크롤러 실행</td>
+                    <td style="padding: 12px; text-align: center;">
+                      ${{ steps.crawler.outputs.conclusion == 'success' && '✅' || steps.crawler.outputs.conclusion == 'failure' && '❌' || '⚠️' }}
+                    </td>
+                    <td style="padding: 12px;">결과: ${{ steps.crawler.outputs.conclusion }} / 마지막 실행: ${{ steps.crawler.outputs.last_run }}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px; font-weight: bold;">뉴스레터 발송</td>
+                    <td style="padding: 12px; text-align: center;">
+                      ${{ steps.newsletter.outputs.status == 'ok' && '✅' || '❌' }}
+                    </td>
+                    <td style="padding: 12px;">
+                      ${{ steps.newsletter.outputs.status == 'ok'
+                        && format('성공 {0}건 / 실패 {1}건 / 총 {2}명 ({3})',
+                          steps.newsletter.outputs.success_count,
+                          steps.newsletter.outputs.fail_count,
+                          steps.newsletter.outputs.total_recipients,
+                          steps.newsletter.outputs.sent_at)
+                        || '최근 25시간 내 발송 기록 없음' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <p style="color: #94a3b8; font-size: 12px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                이 리포트는 GitHub Actions에서 자동 생성되었습니다.
+                <a href="https://github.com/${{ github.repository }}/actions" style="color: #3b82f6;">워크플로우 확인</a>
+              </p>
+            </div>
