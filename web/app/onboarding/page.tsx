@@ -56,7 +56,7 @@ function OnboardingContent() {
 
     const handleSkip = () => {
         if (confirm('건너뛰시겠습니까? 선택한 내용은 저장되지 않습니다.')) {
-            router.push('/');
+            router.push('/?subscribed=true');
         }
     };
 
@@ -135,7 +135,11 @@ function OnboardingContent() {
                                     {item.thumbnail ? (
                                         <img src={item.thumbnail} alt={item.title} className={`w-full h-full object-cover transition-all duration-300 ${isSelected ? 'opacity-40' : 'group-hover:opacity-80'}`} />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-600 font-bold">No Image</div>
+                                        <div className={`w-full h-full flex items-center justify-center font-black text-2xl transition-all duration-300 ${isSelected ? 'opacity-40' : ''}`}>
+                                            <span className="bg-gradient-to-br from-blue-400 to-purple-400 text-transparent bg-clip-text">
+                                                {item.category || item.opinion_leader.charAt(0)}
+                                            </span>
+                                        </div>
                                     )}
 
                                     <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0'}`}>

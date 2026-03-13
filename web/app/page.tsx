@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Mail, Check, AlertCircle, Loader2, Play, ExternalLink } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Mail, Check, AlertCircle, Loader2, Play, ExternalLink, X } from 'lucide-react';
 import Image from 'next/image';
 
 interface Content {
@@ -16,13 +17,15 @@ interface Content {
     category?: string;
 }
 
-export default function Home() {
+function HomeContent() {
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
     const [agreed, setAgreed] = useState(false);
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'duplicate'>('idle');
     const [contents, setContents] = useState<Content[]>([]);
     const [loadingContent, setLoadingContent] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
+    const [showSubscribeToast, setShowSubscribeToast] = useState(false);
 
     const categories = ['All', '정치', '경제', '사회', '부동산', 'IT', '과학', '문화', '지식'];
     const channels = [
@@ -64,6 +67,16 @@ export default function Home() {
         }
         fetchContents();
     }, []);
+
+    useEffect(() => {
+        if (searchParams.get('subscribed') === 'true') {
+            setShowSubscribeToast(true);
+            // Clean up URL without reload
+            window.history.replaceState({}, '', '/');
+            const timer = setTimeout(() => setShowSubscribeToast(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [searchParams]);
 
     const handleSubscribe = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -117,7 +130,21 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white font-sans selection:bg-blue-500/30">
-            {/* ... rest of the component replaced below for brevity in multi_replace ... */}
+            {/* Subscription Success Toast */}
+            {showSubscribeToast && (
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] animate-slide-down">
+                    <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500/40 backdrop-blur-xl text-green-300 px-6 py-4 rounded-2xl shadow-2xl shadow-green-500/20">
+                        <div className="bg-green-500 rounded-full p-1">
+                            <Check className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="font-bold text-base">구독이 완료되었습니다! 내일 아침부터 뉴스레터가 배달됩니다.</span>
+                        <button onClick={() => setShowSubscribeToast(false)} className="ml-2 text-green-400 hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Ambient background effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"></div>
@@ -499,7 +526,22 @@ export default function Home() {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                 }
+                @keyframes slide-down {
+                    from { opacity: 0; transform: translate(-50%, -20px); }
+                    to { opacity: 1; transform: translate(-50%, 0); }
+                }
+                .animate-slide-down {
+                    animation: slide-down 0.4s ease-out;
+                }
             `}</style>
         </div>
+    );
+}
+
+export default function Home() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+            <HomeContent />
+        </Suspense>
     );
 }
