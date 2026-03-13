@@ -97,6 +97,7 @@ export async function POST(request: Request) {
         const mailHistoryRef = await db.collection('mail_history').add({
             sent_at: new Date().toISOString(),
             type,
+            targetGroup: targetGroup || null,
             recipient_count: recipients.length,
             status: 'success',
             simulated: !process.env.GMAIL_USER,
