@@ -1,0 +1,35 @@
+name: Daily Content Crawler
+
+on:
+  schedule:
+    # 매일 06:00 KST (= 21:00 UTC 전날)
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Setup GCP credentials
+        run: echo '${{ secrets.GCP_SA_KEY }}' > backend/service-account.json
+
+      - name: Run crawler
+        working-directory: backend
+        run: python run_crawler.py
+
+      - name: Cleanup credentials
+        if: always()
+        run: rm -f backend/service-account.json
