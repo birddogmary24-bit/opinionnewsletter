@@ -17,6 +17,7 @@ interface MailLog {
     id: string;
     sent_at: string;
     type: string;
+    targetGroup?: string;
     recipient_count: number;
     status: string;
     simulated?: boolean;
@@ -681,10 +682,10 @@ export default function AdminDashboard() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-sm">
-                                        {history.filter(h => h.type === 'all').length === 0 ? (
+                                        {history.filter(h => h.type === 'all' || (h.type === 'group' && h.targetGroup !== 'test')).length === 0 ? (
                                             <tr><td colSpan={6} className="px-8 py-10 text-center text-slate-500">데이터가 없습니다.</td></tr>
                                         ) : (
-                                            history.filter(h => h.type === 'all').map((log) => (
+                                            history.filter(h => h.type === 'all' || (h.type === 'group' && h.targetGroup !== 'test')).map((log) => (
                                                 <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
                                                     <td className="px-8 py-5 text-slate-300 font-medium">{formatDate(log.sent_at)}</td>
                                                     <td className="px-8 py-5 font-bold">{log.recipient_count}명</td>
@@ -787,8 +788,8 @@ export default function AdminDashboard() {
                                                     {formatDate(log.sent_at)}
                                                 </td>
                                                 <td className="px-8 py-5">
-                                                    <span className={`text-[10px] font-black px-3 py-1 rounded-full border ${log.type === 'all' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : log.type === 'individual' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                                        {log.type.toUpperCase()}
+                                                    <span className={`text-[10px] font-black px-3 py-1 rounded-full border ${log.type === 'all' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : log.type === 'individual' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : log.type === 'group' ? (log.targetGroup === 'test' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20') : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                        {log.type === 'group' ? (log.targetGroup === 'test' ? 'TEST' : 'GROUP') : log.type.toUpperCase()}
                                                     </span>
                                                 </td>
                                                 <td className="px-8 py-5 font-black text-white">

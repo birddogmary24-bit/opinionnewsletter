@@ -23,6 +23,7 @@ export async function GET() {
                 id: doc.id,
                 sent_at: data.sent_at,
                 type: data.type,
+                targetGroup: data.targetGroup || null,
                 recipient_count: data.recipient_count,
                 status: data.status,
                 simulated: data.simulated,
