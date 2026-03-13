@@ -33,7 +33,7 @@ export default function OnboardingCompletePage() {
 
                 <div className="space-y-4 w-full">
                     <Link
-                        href="/"
+                        href="/?subscribed=true"
                         className="w-full bg-white text-slate-950 py-4 px-8 rounded-2xl font-black text-lg hover:bg-slate-100 transition-all shadow-xl hover:shadow-white/10 active:scale-95 flex items-center justify-center gap-2"
                     >
                         <Home className="w-5 h-5" />
