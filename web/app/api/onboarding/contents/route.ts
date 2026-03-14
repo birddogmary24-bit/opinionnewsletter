@@ -74,15 +74,32 @@ export async function GET() {
             }
         });
 
-        // If Firestore has no recent data, use fallback channel list
+        // If Firestore has no recent data, try 30-day lookback for thumbnails then use fallback
         if (uniqueContents.length === 0) {
+            const channelThumbnails = new Map<string, string>();
+            try {
+                const lookback30 = new Date();
+                lookback30.setDate(lookback30.getDate() - 30);
+                const thumbnailSnap = await db.collection('contents')
+                    .where('scraped_at', '>=', lookback30)
+                    .orderBy('scraped_at', 'desc')
+                    .limit(500)
+                    .get();
+                thumbnailSnap.docs.forEach(doc => {
+                    const d = doc.data();
+                    if (d.opinion_leader && d.thumbnail && !channelThumbnails.has(d.opinion_leader)) {
+                        channelThumbnails.set(d.opinion_leader, d.thumbnail);
+                    }
+                });
+            } catch (_) { /* thumbnail 조회 실패해도 fallback 진행 */ }
+
             const fallbackContents = FALLBACK_CHANNELS.map((ch, idx) => ({
                 id: `fallback-${idx}`,
                 opinion_leader: ch.opinion_leader,
                 category: ch.category,
                 title: ch.opinion_leader,
                 url: '',
-                thumbnail: '',
+                thumbnail: channelThumbnails.get(ch.opinion_leader) || '',
             }));
             return NextResponse.json({ contents: fallbackContents });
         }
@@ -90,7 +107,6 @@ export async function GET() {
         return NextResponse.json({ contents: uniqueContents });
     } catch (error) {
         console.error("Error fetching onboarding contents:", error);
-        // Return fallback channels even on error so the page is never empty
         const fallbackContents = FALLBACK_CHANNELS.map((ch, idx) => ({
             id: `fallback-${idx}`,
             opinion_leader: ch.opinion_leader,
