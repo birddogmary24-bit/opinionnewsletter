@@ -42,10 +42,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Email not configured' }, { status: 500 });
         }
 
-        // 3. 콘텐츠 가져오기 (24시간 이내, 최대 30개)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        // 3. 콘텐츠 가져오기 (7일 이내, 최대 30개)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const contentSnapshot = await db.collection('contents')
-            .where('scraped_at', '>=', oneDayAgo)
+            .where('scraped_at', '>=', sevenDaysAgo)
             .orderBy('scraped_at', 'desc')
             .limit(30)
             .get();

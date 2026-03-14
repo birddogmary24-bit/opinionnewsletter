@@ -28,6 +28,8 @@ jobs:
 
       - name: Run crawler
         working-directory: backend
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python run_crawler.py
 
       - name: Cleanup credentials
