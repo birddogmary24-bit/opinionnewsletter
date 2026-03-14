@@ -36,10 +36,10 @@ class YouTubeCrawler:
 
         params: dict = {"part": "contentDetails"}
 
-        # @handle 추출
+        # @handle 추출 — forHandle 파라미터는 @ 없이 핸들명만 전달
         if "/@" in channel_url:
             handle = channel_url.split("/@")[-1].rstrip("/")
-            params["forHandle"] = f"@{handle}"
+            params["forHandle"] = handle
         elif "/channel/" in channel_url:
             channel_id = channel_url.split("/channel/")[-1].rstrip("/")
             params["id"] = channel_id
