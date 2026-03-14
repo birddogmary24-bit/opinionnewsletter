@@ -27,3 +27,15 @@ jobs:
 
       - name: Delete Claude branch
         run: git push origin --delete ${{ github.ref_name }}
+
+      - name: Trigger deploy if web files changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'web/' '.github/workflows/deploy.yml' 2>/dev/null || true)
+          if [ -n "$CHANGED" ]; then
+            echo "web 파일 변경 감지, deploy 트리거"
+            gh workflow run deploy.yml --repo ${{ github.repository }} --ref main
+          else
+            echo "web 파일 변경 없음, deploy 스킵"
+          fi

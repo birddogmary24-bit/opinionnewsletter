@@ -85,23 +85,27 @@ jobs:
           from google.cloud import firestore
           from google.oauth2 import service_account
 
-          creds = service_account.Credentials.from_service_account_file('/tmp/sa.json')
-          db = firestore.Client(credentials=creds, project='opnionnewsletter', database='opinionnewsletterdb')
+          try:
+              creds = service_account.Credentials.from_service_account_file('/tmp/sa.json')
+              db = firestore.Client(credentials=creds, project='opnionnewsletter', database='opinionnewsletterdb')
 
-          yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=25)
-          docs = db.collection('mail_history').where('sent_at', '>=', yesterday).order_by('sent_at', direction=firestore.Query.DESCENDING).limit(1).get()
+              yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=25)
+              docs = db.collection('mail_history').where('sent_at', '>=', yesterday).order_by('sent_at', direction=firestore.Query.DESCENDING).limit(1).get()
 
-          if docs:
-              data = docs[0].to_dict()
-              result = {
-                  "status": "ok",
-                  "sent_at": str(data.get('sent_at', 'N/A')),
-                  "success_count": data.get('success_count', 0),
-                  "fail_count": data.get('fail_count', 0),
-                  "total_recipients": data.get('total_recipients', 0)
-              }
-          else:
-              result = {"status": "no_send", "sent_at": "N/A", "success_count": 0, "fail_count": 0, "total_recipients": 0}
+              if docs:
+                  data = docs[0].to_dict()
+                  result = {
+                      "status": "ok",
+                      "sent_at": str(data.get('sent_at', 'N/A')),
+                      "success_count": data.get('success_count', 0),
+                      "fail_count": data.get('fail_count', 0),
+                      "total_recipients": data.get('total_recipients', 0)
+                  }
+              else:
+                  result = {"status": "no_send", "sent_at": "N/A", "success_count": 0, "fail_count": 0, "total_recipients": 0}
+          except Exception as e:
+              result = {"status": "error", "sent_at": "N/A", "success_count": 0, "fail_count": 0, "total_recipients": 0}
+              print(f"Firestore 조회 실패: {e}")
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               for k, v in result.items():
