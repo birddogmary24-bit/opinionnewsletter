@@ -23,6 +23,8 @@ class YouTubeCrawler:
     def _get(self, endpoint: str, params: dict) -> dict:
         params["key"] = self.api_key
         resp = requests.get(f"{self.BASE_URL}/{endpoint}", params=params, timeout=15)
+        if not resp.ok:
+            print(f"  API 오류 상세: {resp.text[:300]}")
         resp.raise_for_status()
         return resp.json()
 
