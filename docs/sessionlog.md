@@ -153,9 +153,56 @@ await fetch('/api/admin/logout', { method: 'POST' });
 
 ---
 
+---
+
+## 2026-03-14 | 4차 세션 — 온보딩 콘텐츠/썸네일 수정 + GitHub Actions 자동화 완성
+
+### 작업 요약
+GitHub에서 로컬로 git pull (51개 커밋 동기화). 구독 온보딩 콘텐츠 빈 화면 수정, 구독 완료 토스트 추가, 온보딩 카테고리별 썸네일 플레이스홀더 구현. GitHub Actions 크롤러·헬스리포트 워크플로우 추가 및 3개 워크플로우 버그 수정.
+
+### 주요 작업
+
+| # | 커밋 | 브랜치 | 내용 |
+|---|------|--------|------|
+| 1 | `10a280c` | claude/fix-subscription-content-list | 온보딩 콘텐츠 빈 화면 수정 (40채널 폴백 + Firestore 72h 조회) |
+| 2 | `10a280c` | claude/fix-subscription-content-list | 구독 완료 후 홈 복귀 시 토스트 알림 추가 |
+| 3 | `459f57c` | claude/fix-subscription-content-list | 크롤러 워크플로우(`crawler.yml`) 추가 — 매일 06:00 KST |
+| 4 | `459f57c` | claude/fix-subscription-content-list | 헬스 리포트 워크플로우(`health-report.yml`) 추가 — 매일 08:00 KST |
+| 5 | `e38216b` | claude/fix-onboarding-thumbnails | 온보딩 썸네일: 카테고리별 그라디언트+이모지 플레이스홀더, Firestore 30일 썸네일 조회 |
+| 6 | `7b71259` | fix/github-actions-workflows (PR #6) | auto-merge 후 deploy 자동 트리거, 크롤러 timeout 60분, 헬스리포트 Firestore 403 graceful 처리 |
+
+### 스케줄 현황 (확정)
+
+| 시간 (KST) | 시스템 | 작업 | 상태 |
+|------|------|------|------|
+| 06:00 | GitHub Actions (`crawler.yml`) | 40채널 크롤링 → Firestore 갱신 | ✅ 활성 (60분 timeout) |
+| 07:00 | Cloud Scheduler (`newsletter-daily-send`) | 뉴스레터 발송 (`/api/cron/send`) | ✅ 활성 |
+| 08:00 | GitHub Actions (`health-report.yml`) | 운영 현황 → birddogmary24@gmail.com 발송 | ✅ 활성 |
+
+### 이슈 및 해결
+
+| 이슈 | 원인 | 해결 |
+|------|------|------|
+| 온보딩 콘텐츠 빈 화면 | Firestore 최근 72h 데이터 없음 (크롤러 미실행) | 40채널 폴백 + 카테고리 플레이스홀더 |
+| 구독 완료 피드백 없음 | 온보딩 완료 후 홈 복귀 시 알림 없음 | `?subscribed=true` 파라미터 + 토스트 5초 표시 |
+| 크롤러 30분 timeout 초과 취소 | 40채널 크롤링 소요 시간 > 30분 | timeout 60분으로 연장 |
+| 헬스 리포트 Firestore 403 실패 | 서비스 계정 `mail_history` 접근 권한 부족 | try/except로 graceful 처리 (에러 시 'error' 상태로 표시) |
+| auto-merge 후 deploy 미실행 | GITHUB_TOKEN push는 다른 워크플로우 트리거 안 함 | auto-merge 후 `gh workflow run deploy.yml` 명시적 호출 |
+| 어드민 접속 불가 | 잘못된 URL(`opinion-newsletter-web`, `us-central1`) | 올바른 URL 안내 (서비스명 하이픈 없음, 리전 asia-northeast3) |
+
+### 배포 결과
+
+| 항목 | 값 |
+|------|-----|
+| 배포 방식 | GitHub Actions (`workflow_dispatch`) 수동 트리거 2회 |
+| 서비스 상태 | healthy |
+| 구독자 수 | 10명 |
+
+---
+
 ## TODO (미완료 항목)
 
-- [ ] 현재 PR(`claude/fix-admin-dashboard-rVL2d`) main 머지 및 배포
 - [ ] 구독자 이메일 암호화 마이그레이션 실행 및 `LEGACY_ENCRYPTION_KEY` 제거
 - [ ] 커스텀 도메인 연결 (URL 변경 방지)
 - [ ] `trackingUrl` 하드코딩 환경변수화 (`admin/send/route.ts`, `cron/send/route.ts`)
+- [ ] Firestore `mail_history` 서비스 계정 권한 추가 (헬스 리포트 정확도 향상)

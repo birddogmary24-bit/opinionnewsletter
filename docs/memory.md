@@ -38,12 +38,19 @@
 | LEGACY_ENCRYPTION_KEY | `12345678901234567890123456789012` (마이그레이션 후 제거) |
 | 방식 | AES-256-CBC, IV 포함, `:` 구분자 |
 
-## GitHub Actions 배포
+## GitHub Actions 워크플로우
 
-- **트리거**: `main` 브랜치 push 또는 auto-merge 완료(`workflow_run`)
-- **흐름**: lint/타입체크 → Docker 빌드 → Cloud Run 배포 → 헬스체크 → 실패 시 롤백
+| 워크플로우 | 트리거 | 설명 |
+|-----------|--------|------|
+| `deploy.yml` | main push(`web/**`) 또는 `workflow_dispatch` | lint → Docker 빌드 → Cloud Run 배포 → 헬스체크 → 실패 시 롤백 |
+| `auto-merge-claude.yml` | `claude/**` 브랜치 push | main에 자동 머지 → web 파일 변경 시 `deploy.yml` 트리거 |
+| `crawler.yml` | 매일 21:00 UTC(=06:00 KST) / `workflow_dispatch` | 40채널 크롤링 → Firestore 갱신 (timeout 60분) |
+| `health-report.yml` | 매일 23:00 UTC(=08:00 KST) / `workflow_dispatch` | 서비스 상태 점검 → birddogmary24@gmail.com 발송 |
+| `pr-check.yml` | PR 생성/업데이트 | lint + 타입체크 |
+
 - **Secrets**: `GCP_SA_KEY`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `ADMIN_PASSWORD`, `ENCRYPTION_KEY`, `CRON_SECRET`
-- **GCP 서비스 계정**: `github-actions-opinionnewlette` (Artifact Registry 관리자 권한 포함)
+- **GCP 서비스 계정**: `github-actions-opinionnewlette` (Artifact Registry 관리자 권한)
+- **주의**: GITHUB_TOKEN으로 push 시 다른 워크플로우 미트리거 → auto-merge는 `gh workflow run`으로 명시적 호출
 
 ## 주요 API 엔드포인트
 
@@ -58,10 +65,10 @@
 
 ## 현재 미완료 작업
 
-1. PR `claude/fix-admin-dashboard-rVL2d` → main 머지 및 배포
-2. 구독자 이메일 암호화 마이그레이션 실행 → `LEGACY_ENCRYPTION_KEY` 제거
-3. `trackingUrl` 하드코딩 환경변수화 필요 (`admin/send/route.ts`, `cron/send/route.ts`)
-4. 커스텀 도메인 연결
+1. 구독자 이메일 암호화 마이그레이션 실행 → `LEGACY_ENCRYPTION_KEY` 제거
+2. `trackingUrl` 하드코딩 환경변수화 필요 (`admin/send/route.ts`, `cron/send/route.ts`)
+3. 커스텀 도메인 연결
+4. Firestore `mail_history` 서비스 계정 권한 추가 (헬스 리포트 뉴스레터 발송 항목 정확도)
 
 ## 커스텀 스킬
 
