@@ -13,6 +13,17 @@ interface Content {
     category?: string;
 }
 
+const CATEGORY_STYLES: Record<string, { gradient: string; emoji: string }> = {
+    '정치': { gradient: 'from-blue-700 via-blue-800 to-indigo-900', emoji: '🏛️' },
+    '경제': { gradient: 'from-emerald-600 via-teal-700 to-cyan-900', emoji: '📈' },
+    '사회': { gradient: 'from-orange-500 via-orange-700 to-red-900', emoji: '🗞️' },
+    '부동산': { gradient: 'from-amber-500 via-yellow-700 to-orange-900', emoji: '🏠' },
+    'IT': { gradient: 'from-cyan-500 via-blue-600 to-violet-900', emoji: '💻' },
+    '과학': { gradient: 'from-purple-600 via-violet-700 to-indigo-900', emoji: '🔬' },
+    '문화': { gradient: 'from-pink-500 via-rose-600 to-red-900', emoji: '🎨' },
+    '지식': { gradient: 'from-yellow-500 via-amber-600 to-orange-800', emoji: '📚' },
+};
+
 function OnboardingContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -134,13 +145,15 @@ function OnboardingContent() {
                                 <div className="aspect-video bg-slate-800 relative">
                                     {item.thumbnail ? (
                                         <img src={item.thumbnail} alt={item.title} className={`w-full h-full object-cover transition-all duration-300 ${isSelected ? 'opacity-40' : 'group-hover:opacity-80'}`} />
-                                    ) : (
-                                        <div className={`w-full h-full flex items-center justify-center font-black text-2xl transition-all duration-300 ${isSelected ? 'opacity-40' : ''}`}>
-                                            <span className="bg-gradient-to-br from-blue-400 to-purple-400 text-transparent bg-clip-text">
-                                                {item.category || item.opinion_leader.charAt(0)}
-                                            </span>
-                                        </div>
-                                    )}
+                                    ) : (() => {
+                                        const style = CATEGORY_STYLES[item.category || ''] || { gradient: 'from-slate-600 via-slate-700 to-slate-900', emoji: '📺' };
+                                        return (
+                                            <div className={`w-full h-full bg-gradient-to-br ${style.gradient} flex flex-col items-center justify-center gap-2 transition-all duration-300 ${isSelected ? 'opacity-40' : ''}`}>
+                                                <span className="text-4xl drop-shadow-lg">{style.emoji}</span>
+                                                <span className="text-white/80 text-xs font-bold tracking-widest uppercase">{item.category}</span>
+                                            </div>
+                                        );
+                                    })()}
 
                                     <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0'}`}>
                                         <div className="bg-blue-500 rounded-full p-2 shadow-xl transform scale-125">
