@@ -75,7 +75,7 @@ export async function GET() {
             .get();
 
         if (latestContent.empty) {
-            checks['Content Freshness'] = { status: 'error', message: '콘텐츠 없음 — 크롤러 미실행' };
+            checks['Content Freshness'] = { status: 'warning', message: '콘텐츠 없음 — 크롤러 미실행' };
         } else {
             const latestData = latestContent.docs[0].data();
             const scrapedAt = latestData.scraped_at?.toDate?.() ?? new Date(latestData.scraped_at);
@@ -83,7 +83,7 @@ export async function GET() {
 
             if (hoursAgo > 48) {
                 checks['Content Freshness'] = {
-                    status: 'error',
+                    status: 'warning',
                     message: `마지막 크롤링 ${Math.floor(hoursAgo)}시간 전 — 크롤러 장애 의심`
                 };
             } else if (hoursAgo > 25) {
