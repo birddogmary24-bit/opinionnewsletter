@@ -42,18 +42,28 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Email not configured' }, { status: 500 });
         }
 
-        // 3. 콘텐츠 가져오기 (24시간 이내, 최대 30개)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        // 3. 콘텐츠 가져오기 (7일 이내, 최대 30개)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const contentSnapshot = await db.collection('contents')
-            .where('scraped_at', '>=', oneDayAgo)
+            .where('scraped_at', '>=', sevenDaysAgo)
             .orderBy('scraped_at', 'desc')
             .limit(30)
             .get();
 
-        type ContentItem = { view_count?: number; opinion_leader?: string; title?: string; url?: string; [key: string]: unknown; };
+        type ContentItem = { view_count?: number; opinion_leader?: string; title?: string; url?: string; category?: string; [key: string]: unknown; };
         const contents = contentSnapshot.docs.map(d => d.data()) as ContentItem[];
 
         if (contents.length === 0) {
+            // 콘텐츠 0건도 mail_history에 기록 (장애 추적용)
+            await db.collection('mail_history').add({
+                sent_at: new Date().toISOString(),
+                type: 'no_content',
+                recipient_count: 0,
+                status: 'skipped',
+                error_message: '24시간 내 콘텐츠 없음 — 크롤러 상태 확인 필요',
+                trigger: 'cron',
+            });
+            console.warn('Cron send: No content found in last 24 hours. Crawler may be broken.');
             return NextResponse.json({ success: true, message: 'No content to send', count: 0 });
         }
 
@@ -120,12 +130,11 @@ export async function POST(request: Request) {
         const remainingForCategories = sortedByView.slice(3);
 
         const categoryStories: Record<string, ContentItem[]> = {};
-        const categories = ['경제', '정치', '사회', '교육', '문화', 'IT/테크'];
+        const categories = ['정치', '경제', '사회', '부동산', 'IT', '과학', '문화', '지식'];
 
         categories.forEach(category => {
             const categoryItems = remainingForCategories.filter((c) => {
-                const text = `${c.opinion_leader} ${c.title}`.toLowerCase();
-                return text.includes(category.toLowerCase());
+                return c.category === category;
             }).slice(0, 5);
 
             if (categoryItems.length > 0) {
@@ -203,6 +212,9 @@ export async function POST(request: Request) {
         await mailHistoryRef.update({
             status: failCount === recipients.length ? 'error' : 'success',
             error_message: failCount > 0 ? `${failCount}/${recipients.length} failed` : undefined,
+            success_count: successCount,
+            fail_count: failCount,
+            total_recipients: recipients.length,
         });
 
         console.log(`Cron send complete: ${successCount} success, ${failCount} failed out of ${recipients.length}`);

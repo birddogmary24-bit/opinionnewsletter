@@ -133,22 +133,20 @@ def run_crawlers():
             significant_view_change = (new_views > old_views * 1.05) if old_views > 0 else (new_views > 0)
             category_changed = existing_data.get('category') != item.get('category')
             
+            # scraped_at은 항상 갱신 — 이메일 발송 API의 "최근 N일 콘텐츠" 필터에 잡히도록
+            update_data = {
+                'scraped_at': now,
+            }
+
             if significant_view_change or category_changed:
-                update_data = {
-                    'view_count': new_views,
-                    'description': item.get('description'),
-                    'category': item.get('category')
-                }
-                
+                update_data['view_count'] = new_views
+                update_data['description'] = item.get('description')
+                update_data['category'] = item.get('category')
                 if category_changed:
-                    update_data['scraped_at'] = now
-                    print(f"   - Category Migrated/Updated: {item['title']} -> {item['category']}")
-                
-                doc_ref.update(update_data)
+                    print(f"   - Category Updated: {item['title']} -> {item['category']}")
                 print(f"   - Updated: {item['title']} (Views: {old_views} -> {new_views})")
-            else:
-                # Skip write to save Firestore quota
-                pass
+
+            doc_ref.update(update_data)
         else:
             # New item: must translate and save
             item['title'] = translate_text(item['title'])

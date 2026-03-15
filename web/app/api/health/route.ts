@@ -67,6 +67,41 @@ export async function GET() {
         checks['Active Subscribers'] = { status: 'warning', message: '조회 실패' };
     }
 
+    // 5. 콘텐츠 freshness 체크 (크롤러 장애 조기 감지)
+    try {
+        const latestContent = await db.collection('contents')
+            .orderBy('scraped_at', 'desc')
+            .limit(1)
+            .get();
+
+        if (latestContent.empty) {
+            checks['Content Freshness'] = { status: 'error', message: '콘텐츠 없음 — 크롤러 미실행' };
+        } else {
+            const latestData = latestContent.docs[0].data();
+            const scrapedAt = latestData.scraped_at?.toDate?.() ?? new Date(latestData.scraped_at);
+            const hoursAgo = (Date.now() - scrapedAt.getTime()) / (1000 * 60 * 60);
+
+            if (hoursAgo > 48) {
+                checks['Content Freshness'] = {
+                    status: 'error',
+                    message: `마지막 크롤링 ${Math.floor(hoursAgo)}시간 전 — 크롤러 장애 의심`
+                };
+            } else if (hoursAgo > 25) {
+                checks['Content Freshness'] = {
+                    status: 'warning',
+                    message: `마지막 크롤링 ${Math.floor(hoursAgo)}시간 전`
+                };
+            } else {
+                checks['Content Freshness'] = {
+                    status: 'ok',
+                    message: `마지막 크롤링 ${Math.floor(hoursAgo)}시간 전`
+                };
+            }
+        }
+    } catch {
+        checks['Content Freshness'] = { status: 'warning', message: '콘텐츠 freshness 조회 실패' };
+    }
+
     // 전체 상태 판단
     const hasError = Object.values(checks).some(c => c.status === 'error');
     const hasWarning = Object.values(checks).some(c => c.status === 'warning');

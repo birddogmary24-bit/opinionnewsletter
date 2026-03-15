@@ -30,10 +30,10 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { type, subscriberId, targetGroup } = body; // type: 'all' | 'individual' | 'group', targetGroup: 'test' | 'production' | 'all'
 
-        // 2. Fetch Content (최대 30개, 24시간 이내 데이터)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        // 2. Fetch Content (최대 30개, 7일 이내 데이터)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const contentSnapshot = await db.collection('contents')
-            .where('scraped_at', '>=', oneDayAgo)
+            .where('scraped_at', '>=', sevenDaysAgo)
             .orderBy('scraped_at', 'desc')
             .limit(30)
             .get();
